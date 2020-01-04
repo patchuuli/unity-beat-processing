@@ -4,8 +4,9 @@ using UnityEngine;
 
 public class ParamCube : MonoBehaviour
 {
-    public int band;
+    public int bandNum;
     public float startScale, scaleMultiplier;
+    public bool useBuffer = true;
 
     void Start()
     {
@@ -13,10 +14,19 @@ public class ParamCube : MonoBehaviour
 
     void Update()
     {
-		transform.localScale = new Vector3(
-			transform.localScale.x,
-			(AudioPeer.freqBands[band] * scaleMultiplier) + startScale, 
-			transform.localScale.z
-		);
+    	if (useBuffer) {
+			transform.localScale = new Vector3(
+				transform.localScale.x,
+				(AudioPeer.bandBuffer[bandNum] * scaleMultiplier) + startScale, 
+				transform.localScale.z
+			);
+    	}
+		else {
+			transform.localScale = new Vector3(
+				transform.localScale.x,
+				(AudioPeer.freqBands[bandNum] * scaleMultiplier) + startScale, 
+				transform.localScale.z
+			);
+		}
     }
 }

@@ -15,6 +15,13 @@ public class AudioPeer : MonoBehaviour
 
 	public static float[] samples = new float[numSamples];
 	public static float[] freqBands = new float[numBands];
+	public static float[] bandBuffer = new float[numBands];
+	//public float barFallSpeed = 1.2f;
+	public float barFallAccel = 1.35f;
+	//public float barFallIncrement = 0.005f;
+	public float barFallBaseSpeed = 0.01f;
+	float[] bufferDecrease = new float[numBands];
+
 
     void Start()
     {
@@ -34,11 +41,14 @@ public class AudioPeer : MonoBehaviour
     {
 		GetSpectrumAudioSource();
 		MakeFreqBands();
+		BandBuffer();
     }
+
     void GetSpectrumAudioSource()
     {
 		audioSource.GetSpectrumData(samples, numChannels, fftWindowType);
     }
+
 	void MakeFreqBands()
 	{
 		int count = 0;
@@ -59,4 +69,20 @@ public class AudioPeer : MonoBehaviour
 			freqBands[i] = average * 10;
 		}
 	}
+
+	void BandBuffer()
+	{
+		for (int i = 0; i < numBands; i++) {
+			if (freqBands[i] < bandBuffer[i]) {
+				bandBuffer[i] -= bufferDecrease[i];
+				bufferDecrease[i] *= barFallAccel;
+			}
+			else {
+				bandBuffer[i] = freqBands[i];
+				bufferDecrease[i] = barFallBaseSpeed;
+			}
+		}
+
+	}
+
 }

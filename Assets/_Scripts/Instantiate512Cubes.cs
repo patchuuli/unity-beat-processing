@@ -12,10 +12,12 @@ public class Instantiate512Cubes : MonoBehaviour
     public float maxScale = 100000;
     public float cubeHeight = 2;
     GameObject[] sampleCube = new GameObject[numCubes];
+    AudioPeer audioPeer;
 
 
     void Start()
     {
+		audioPeer = FindObjectOfType<AudioPeer>();
         for(int i = 0; i < numCubes; i++) {
             GameObject instanceSampleCube = (GameObject) Instantiate(sampleCubePrefab);
             instanceSampleCube.transform.position = this.transform.position;
@@ -32,7 +34,7 @@ public class Instantiate512Cubes : MonoBehaviour
     {
         for (int i = 0; i < numCubes; i++) {
             if (sampleCube != null) {
-                sampleCube[i].transform.localScale = new Vector3(cubeScale, AudioPeer.samples[i] * maxScale + 2,cubeScale);
+                //sampleCube[i].transform.localScale = new Vector3(cubeScale, audioPeer.samplesLeft[i] * maxScale + 2,cubeScale);
             }
         }
     }

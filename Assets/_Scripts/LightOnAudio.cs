@@ -8,15 +8,15 @@ public class LightOnAudio : MonoBehaviour
     public float minIntensity = 1.0f;
     public float maxIntensity = 5.0f;
     Light _light;
-    AudioPeer audioPeer;
+    AudioProcessor audioProcessor;
     void Start()
     {
 		_light = GetComponent<Light>();
-		audioPeer = FindObjectOfType<AudioPeer>();
+		audioProcessor = FindObjectOfType<AudioProcessor>();
     }
 
     void Update()
     {
-		_light.intensity = (audioPeer.audioBandBuffer[bandNum] * (maxIntensity - minIntensity)) + minIntensity;
+		_light.intensity = (audioProcessor.audioBandBuffer[bandNum] * (maxIntensity - minIntensity)) + minIntensity;
     }
 }

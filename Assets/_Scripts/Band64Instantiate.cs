@@ -10,11 +10,11 @@ public class Band64Instantiate : MonoBehaviour
 	public float maxScale = 100000;
 
     private GameObject[] bands = new GameObject[64];
-	AudioPeer audioPeer;
+	AudioProcessor audioProcessor;
 
     void Start()
     {
-		audioPeer = FindObjectOfType<AudioPeer>();
+		audioProcessor = FindObjectOfType<AudioProcessor>();
 		InstantiateBands64();
     }
 
@@ -40,12 +40,14 @@ public class Band64Instantiate : MonoBehaviour
 
 	void ScaleBandHeight()
 	{
+		/*
 		for (int i = 0; i < 64; i++) {
 			bands[i].transform.localScale = new Vector3 (
 				baseScale,
-				baseScale + (audioPeer.samplesLeft[i] + audioPeer.samplesRight[i]) * maxScale,
+				baseScale + (audioProcessor.samplesLeft[i] + audioProcessor.samplesRight[i]) * maxScale,
 				baseScale
 			);
 		}
+		*/
 	}
 }

@@ -10,8 +10,9 @@ public class ReactToBeat : MonoBehaviour
 
 	[Header("General")]
 	//public AttributeType attributeType;
-	public bool enableScalingEffect = true;
-	public bool enableLightingEffect = true;
+	public bool enableScalingEffect = false;
+	public bool enableLightingEffect = false;
+	public bool enableAverageAmpEffect = false;
 	public BeatDetector.BeatDivision beatDivision = BeatDetector.BeatDivision.Double;
 
 	[Header("Scale Settings")]
@@ -27,10 +28,12 @@ public class ReactToBeat : MonoBehaviour
 
     private Material material;
 	private Light lightComponent;
+	private AudioProcessor audioProcessor;
 
 	void Start()
 	{
 		material = GetComponent<MeshRenderer>().materials[0];
+		audioProcessor = FindObjectOfType<AudioProcessor>();
 		//lightComponent = GetComponent<Light>();
 	}
 
@@ -38,7 +41,14 @@ public class ReactToBeat : MonoBehaviour
     {
 		if (enableScalingEffect) ScaleToBeat();
 		if (enableLightingEffect) LightToBeat();
+		float j = audioProcessor.averageAmplitude;
     }
+
+
+	/***************************************************
+						AMPLITUDE
+	***************************************************/
+	float GetAvgAmplitude(){return audioProcessor.averageAmplitude;}
 
 	/***************************************************
 						LIGHTING

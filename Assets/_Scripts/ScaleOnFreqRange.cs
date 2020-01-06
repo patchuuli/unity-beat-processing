@@ -23,11 +23,11 @@ public class ScaleOnFreqRange : MonoBehaviour
     public bool useBuffer = true;
 
     private Material material;
-    private AudioPeer audioPeer;
+    private AudioProcessor audioProcessor;
 
     void Start()
     {
-        audioPeer = FindObjectOfType<AudioPeer>();
+        audioProcessor = FindObjectOfType<AudioProcessor>();
 		/*
 		Debug.Log("Subbass = " + (int)FrequencyRange.SubBass);
 		Debug.Log("Bass = " + (int)FrequencyRange.Bass);
@@ -37,22 +37,22 @@ public class ScaleOnFreqRange : MonoBehaviour
 
     void Update()
     {
-		if (float.IsNaN(audioPeer.amplitudeBuffer) || 
-			float.IsNaN(audioPeer.amplitude)) {
+		if (float.IsNaN(audioProcessor.amplitudeBuffer) || 
+			float.IsNaN(audioProcessor.amplitude)) {
 				return;
 		}
         if (useBuffer) {
             transform.localScale = new Vector3 (
-                audioPeer.audioBandBuffer[(int)frequencyRange] * maxScale,
-                audioPeer.audioBandBuffer[(int)frequencyRange] * maxScale,
-                audioPeer.audioBandBuffer[(int)frequencyRange] * maxScale
+                audioProcessor.audioBandBuffer[(int)frequencyRange] * maxScale,
+                audioProcessor.audioBandBuffer[(int)frequencyRange] * maxScale,
+                audioProcessor.audioBandBuffer[(int)frequencyRange] * maxScale
             );
         }
         else {
             transform.localScale = new Vector3 (
-                audioPeer.audioBand[(int)frequencyRange] * maxScale,
-                audioPeer.audioBand[(int)frequencyRange] * maxScale,
-                audioPeer.audioBand[(int)frequencyRange] * maxScale
+                audioProcessor.audioBand[(int)frequencyRange] * maxScale,
+                audioProcessor.audioBand[(int)frequencyRange] * maxScale,
+                audioProcessor.audioBand[(int)frequencyRange] * maxScale
             );
         }
     }

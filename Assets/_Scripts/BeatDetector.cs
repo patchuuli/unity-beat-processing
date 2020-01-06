@@ -6,7 +6,7 @@ public class BeatDetector : MonoBehaviour
 {
 	private static BeatDetector bpmInstance;
     private AudioClip audioClip;
-	private float bpm;
+	public static float bpm;
 
 	public static bool beatFull = false;
 	private float beatInterval;
@@ -59,6 +59,9 @@ public class BeatDetector : MonoBehaviour
 	{
 		audioClip = FindObjectOfType<AudioSource>().clip;
 		bpm = UniBpmAnalyzer.AnalyzeBpm(audioClip);
+		while (bpm > 180) {
+			bpm /= 2;
+		}
 	}
 
 	void SetIntervalValues()

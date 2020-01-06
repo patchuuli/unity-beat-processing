@@ -9,42 +9,42 @@ public class ParamCube : MonoBehaviour
 	public float scaleMultiplier = 96.0f;
     public bool useBuffer = true;
 	Material material;
-	AudioPeer audioPeer;
+	AudioProcessor audioProcessor;
 
     void Start()
     {
 		material = GetComponent<MeshRenderer>().materials[0];
-		audioPeer = FindObjectOfType<AudioPeer>();
+		audioProcessor = FindObjectOfType<AudioProcessor>();
     }
 
     void Update()
     {
-		if (float.IsNaN(audioPeer.audioBandBuffer[bandNum])) {
+		if (float.IsNaN(audioProcessor.audioBandBuffer[bandNum])) {
 			return;
 		}
     	if (useBuffer) {
 			transform.localScale = new Vector3(
 				transform.localScale.x,
-				(audioPeer.audioBandBuffer[bandNum] * scaleMultiplier) + startScale, 
+				(audioProcessor.audioBandBuffer[bandNum] * scaleMultiplier) + startScale, 
 				transform.localScale.z
 			);
 			Color color = new Color(
-				audioPeer.audioBandBuffer[bandNum], 
-				audioPeer.audioBandBuffer[bandNum], 
-				audioPeer.audioBandBuffer[bandNum] 
+				audioProcessor.audioBandBuffer[bandNum], 
+				audioProcessor.audioBandBuffer[bandNum], 
+				audioProcessor.audioBandBuffer[bandNum] 
 			);
 			material.SetColor("_EmissionColor", color);
     	}
 		else {
 			transform.localScale = new Vector3(
 				transform.localScale.x,
-				(audioPeer.audioBand[bandNum] * scaleMultiplier) + startScale, 
+				(audioProcessor.audioBand[bandNum] * scaleMultiplier) + startScale, 
 				transform.localScale.z
 			);
 			Color color = new Color(
-				audioPeer.audioBand[bandNum], 
-				audioPeer.audioBand[bandNum], 
-				audioPeer.audioBand[bandNum] 
+				audioProcessor.audioBand[bandNum], 
+				audioProcessor.audioBand[bandNum], 
+				audioProcessor.audioBand[bandNum] 
 			);
 			material.SetColor("_EmissionColor", color);
 		}

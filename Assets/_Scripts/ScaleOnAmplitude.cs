@@ -9,32 +9,32 @@ public class ScaleOnAmplitude : MonoBehaviour
     public bool useBuffer = true;
 
     private Material material;
-    private AudioPeer audioPeer;
+    private AudioProcessor audioProcessor;
 
     void Start()
     {
         material = GetComponent<MeshRenderer>().materials[0];
-        audioPeer = FindObjectOfType<AudioPeer>();
+        audioProcessor = FindObjectOfType<AudioProcessor>();
     }
 
     void Update()
     {
-		if (float.IsNaN(audioPeer.amplitudeBuffer) || 
-			float.IsNaN(audioPeer.amplitude)) {
+		if (float.IsNaN(audioProcessor.amplitudeBuffer) || 
+			float.IsNaN(audioProcessor.amplitude)) {
 				return;
 		}
         if (useBuffer) {
             transform.localScale = new Vector3 (
-                (audioPeer.amplitudeBuffer * maxScale) + startScale,
-                (audioPeer.amplitudeBuffer * maxScale) + startScale,
-                (audioPeer.amplitudeBuffer * maxScale) + startScale
+                (audioProcessor.amplitudeBuffer * maxScale) + startScale,
+                (audioProcessor.amplitudeBuffer * maxScale) + startScale,
+                (audioProcessor.amplitudeBuffer * maxScale) + startScale
             );
         }
         else {
             transform.localScale = new Vector3 (
-                (audioPeer.amplitude * maxScale) + startScale,
-                (audioPeer.amplitude * maxScale) + startScale,
-                (audioPeer.amplitude * maxScale) + startScale
+                (audioProcessor.amplitude * maxScale) + startScale,
+                (audioProcessor.amplitude * maxScale) + startScale,
+                (audioProcessor.amplitude * maxScale) + startScale
             );
         }
     }

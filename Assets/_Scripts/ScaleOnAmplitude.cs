@@ -6,30 +6,35 @@ public class ScaleOnAmplitude : MonoBehaviour
 {
     public float startScale = 0.5f;
     public float maxScale = 4.0f;
-	public float scaleDecreaseFactor = 0.1f;
-    public float red, green, blue;  
-    Material material;
+    public bool useBuffer = true;
+
+    private Material material;
+    private AudioPeer audioPeer;
 
     void Start()
     {
-        //material = GetComponent<MeshRenderer>().materials[0];
+        material = GetComponent<MeshRenderer>().materials[0];
+        audioPeer = FindObjectOfType<AudioPeer>();
     }
 
     void Update()
     {
-		if (BPM.beatDouble) {
-			Debug.Log("Double Beat!");
+		if (float.IsNaN(audioPeer.amplitudeBuffer) || 
+			float.IsNaN(audioPeer.amplitude)) {
+				return;
+		}
+        if (useBuffer) {
             transform.localScale = new Vector3 (
-                maxScale,
-                maxScale,
-                maxScale
+                (audioPeer.amplitudeBuffer * maxScale) + startScale,
+                (audioPeer.amplitudeBuffer * maxScale) + startScale,
+                (audioPeer.amplitudeBuffer * maxScale) + startScale
             );
         }
         else {
             transform.localScale = new Vector3 (
-                gameObject.transform.localScale.x - scaleDecreaseFactor,
-                gameObject.transform.localScale.y - scaleDecreaseFactor,
-                gameObject.transform.localScale.z - scaleDecreaseFactor
+                (audioPeer.amplitude * maxScale) + startScale,
+                (audioPeer.amplitude * maxScale) + startScale,
+                (audioPeer.amplitude * maxScale) + startScale
             );
         }
     }

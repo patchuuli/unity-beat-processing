@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BPM : MonoBehaviour
+public class BeatDetector : MonoBehaviour
 {
-	private static BPM bpmInstance;
+	private static BeatDetector bpmInstance;
     private AudioClip audioClip;
 	private float bpm;
 

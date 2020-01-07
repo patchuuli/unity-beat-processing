@@ -85,10 +85,10 @@ public class AudioProcessor : MonoBehaviour
 		for (int i = 0; i < numBands; i++) {
 			float average = 0.0f;
 			int sampleCount = (int) Mathf.Pow(2,i) * 2; // the number of samples within band 'i'
-			if (i >= 6) {
+			if (i == numBands - 1) {
 				sampleCount += 2;
 			}
-			Debug.Log("sampleCount " + i + ": " + sampleCount);
+			//Debug.Log("sampleCount " + i + ": " + sampleCount);
 
 			for (int j = 0; j < sampleCount/(numBands/7); j++) { // find average of all amplitudes in band 'i'
 				if (channel == Channel.Stereo) {
@@ -106,7 +106,7 @@ public class AudioProcessor : MonoBehaviour
 			freqBands[i] = average * 10;
 			averageAmplitude += freqBands[i];
 		}
-		Debug.Log("Total sample count = " + count); 
+		//Debug.Log("Total sample count = " + count); 
 		averageAmplitude /= numBands;
 	}
 

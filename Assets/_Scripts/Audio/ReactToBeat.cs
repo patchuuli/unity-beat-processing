@@ -34,7 +34,7 @@ public class ReactToBeat : MonoBehaviour
 	{
 		material = GetComponent<MeshRenderer>().materials[0];
 		audioProcessor = FindObjectOfType<AudioProcessor>();
-		//lightComponent = GetComponent<Light>();
+		lightComponent = GetComponent<Light>();
 	}
 
     void Update()

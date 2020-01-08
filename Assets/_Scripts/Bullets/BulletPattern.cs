@@ -25,7 +25,8 @@ public class BulletPattern : MonoBehaviour
 
 	private int bulletsPerPattern;
 	private GameObject[] bulletArr = new GameObject[512];
-	public uint bulletCount = 0;
+	private float[] bulletPosArr = new float[512];
+	private uint bulletCount = 0;
 	private bool canFire = true;
 	private Player player;
 
@@ -94,9 +95,12 @@ public class BulletPattern : MonoBehaviour
 	private void LaunchSinePattern()
 	{
 		if (canFire) {
-			bulletArr[bulletCount++] = Instantiate(bulletPrefab, player.GetPos(), Quaternion.identity);
-			bulletArr[bulletCount++] = Instantiate(bulletPrefab, player.GetPos(), Quaternion.identity);
-			//bulletCount+= 2;
+			bulletArr[bulletCount] = Instantiate(bulletPrefab, player.GetPos(), Quaternion.identity);
+			bulletPosArr[bulletCount] = player.GetPos().x;
+			bulletCount++;
+			bulletArr[bulletCount] = Instantiate(bulletPrefab, player.GetPos(), Quaternion.identity);
+			bulletPosArr[bulletCount] = player.GetPos().x;
+			bulletCount++;
 			timeSinceLastShot = 0.0f;
 		}
 	}
@@ -128,16 +132,15 @@ public class BulletPattern : MonoBehaviour
 	void MoveSineBullets(float bulletX, float bulletY, float bulletZ)
 	{
 		for (int i = 0; i < bulletCount; i++) {
-			//bulletX = sineAmplitude * Mathf.Sin(2*Mathf.PI*sineFrequency*Time.realtimeSinceStartup);
-			bulletX = sineAmplitude * Mathf.Sin(2*Mathf.PI*sineFrequency*Time.realtimeSinceStartup);
+			bulletX = sineAmplitude * Mathf.Sin(2*Mathf.PI*sineFrequency * Time.realtimeSinceStartup);
 			bulletY = bulletArr[i].transform.position.y + bulletSpeed/2 * Time.deltaTime;
 			bulletZ = bulletArr[i].transform.position.z;
-			bulletArr[i].transform.position = new Vector3 (bulletX, bulletY, bulletZ);
+			//bulletArr[i].transform.position = new Vector3 (bulletX, bulletY, bulletZ);
 			if (i % 2 == 0) {
-				bulletArr[i].transform.position = new Vector3 (-bulletX, bulletY, bulletZ);
+				bulletArr[i].transform.position = new Vector3 (bulletPosArr[i]-bulletX, bulletY, bulletZ);
 			}
 			else {
-				bulletArr[i].transform.position = new Vector3 (bulletX, bulletY, bulletZ);
+				bulletArr[i].transform.position = new Vector3 (bulletPosArr[i]+bulletX, bulletY, bulletZ);
 			}
 		}
 	}

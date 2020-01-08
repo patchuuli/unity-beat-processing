@@ -160,6 +160,9 @@ MonoBehaviour:
   isFiringSpecialWeapon: 0
   isFocused: 0
   isPaused: 0
+  isLeftClicked: 0
+  isRightClicked: 0
+  isMiddleClicked: 0
 --- !u!114 &1277363986891377773
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -180,4 +183,3 @@ MonoBehaviour:
   timeSinceLastShot: 0
   sineAmplitude: 2
   sineFrequency: 1
-  bulletCount: 0

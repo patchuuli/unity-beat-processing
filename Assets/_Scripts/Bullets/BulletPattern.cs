@@ -12,7 +12,7 @@ public class BulletPattern : MonoBehaviour
 	*/
 
 	public enum BulletPatternType {
-		Boring, Sine, Flower
+		Boring, Sine, Burst, Flower
 	};
 	public BulletPatternType bulletPatternType;
 	public GameObject bulletPrefab;
@@ -25,7 +25,7 @@ public class BulletPattern : MonoBehaviour
 
 	private int bulletsPerPattern;
 	private GameObject[] bulletArr = new GameObject[512];
-	private float[] bulletPosArr = new float[512];
+	private float[] bulletLaunchPosArr = new float[512];
 	private uint bulletCount = 0;
 	private bool canFire = true;
 	private Player player;
@@ -96,10 +96,10 @@ public class BulletPattern : MonoBehaviour
 	{
 		if (canFire) {
 			bulletArr[bulletCount] = Instantiate(bulletPrefab, player.GetPos(), Quaternion.identity);
-			bulletPosArr[bulletCount] = player.GetPos().x;
+			bulletLaunchPosArr[bulletCount] = player.GetPos().x;
 			bulletCount++;
 			bulletArr[bulletCount] = Instantiate(bulletPrefab, player.GetPos(), Quaternion.identity);
-			bulletPosArr[bulletCount] = player.GetPos().x;
+			bulletLaunchPosArr[bulletCount] = player.GetPos().x;
 			bulletCount++;
 			timeSinceLastShot = 0.0f;
 		}
@@ -132,16 +132,36 @@ public class BulletPattern : MonoBehaviour
 	void MoveSineBullets(float bulletX, float bulletY, float bulletZ)
 	{
 		for (int i = 0; i < bulletCount; i++) {
-			bulletX = sineAmplitude * Mathf.Sin(2*Mathf.PI*sineFrequency * Time.realtimeSinceStartup);
+			bulletX = sineAmplitude * SineOffset();
 			bulletY = bulletArr[i].transform.position.y + bulletSpeed/2 * Time.deltaTime;
 			bulletZ = bulletArr[i].transform.position.z;
 			//bulletArr[i].transform.position = new Vector3 (bulletX, bulletY, bulletZ);
 			if (i % 2 == 0) {
-				bulletArr[i].transform.position = new Vector3 (bulletPosArr[i]-bulletX, bulletY, bulletZ);
+				bulletArr[i].transform.position = new Vector3 (bulletLaunchPosArr[i]-bulletX, bulletY, bulletZ);
 			}
 			else {
-				bulletArr[i].transform.position = new Vector3 (bulletPosArr[i]+bulletX, bulletY, bulletZ);
+				bulletArr[i].transform.position = new Vector3 (bulletLaunchPosArr[i]+bulletX, bulletY, bulletZ);
 			}
+		}
+	}
+
+	private void LaunchBurstPattern()
+	{
+		if (canFire) {
+			bulletArr[bulletCount] = Instantiate(bulletPrefab, player.GetPos(), Quaternion.identity);
+			bulletLaunchPosArr[bulletCount] = player.GetPos().x;
+			bulletCount++;
+			bulletArr[bulletCount] = Instantiate(bulletPrefab, player.GetPos(), Quaternion.identity);
+			bulletLaunchPosArr[bulletCount] = player.GetPos().x;
+			bulletCount++;
+			timeSinceLastShot = 0.0f;
+		}
+	}
+
+	void MoveBurstBullets(float bulletX, float bulletY, float bulletZ)
+	{
+		for (int i = 0; i < bulletCount; i++) {
+
 		}
 	}
 
@@ -154,5 +174,10 @@ public class BulletPattern : MonoBehaviour
 			canFire = false;
 			timeSinceLastShot += Time.deltaTime;
 		}
+	}
+
+	float SineOffset()
+	{
+		return Mathf.Sin(2*Mathf.PI*sineFrequency * Time.realtimeSinceStartup);
 	}
 }

@@ -8,7 +8,7 @@ public class Player : MonoBehaviour
 	public float focusModePlayerSpeedMultiplier = 0.5f;
 	float currentPlayerSpeed;
 
-	PrimaryAttack primaryAttack;
+	BulletPattern bulletPattern;
 
 	PlayerInput input;
 	Vector3 lowerLeftCorner;
@@ -20,21 +20,14 @@ public class Player : MonoBehaviour
     {
 		input = GetComponent<PlayerInput>();
 		GetScreenBounds();
-		primaryAttack = FindObjectOfType<PrimaryAttack>();
-		/*
-		Debug.Log("minXPos = " + minXPos);
-		Debug.Log("maxXPos = " + maxXPos);
-		Debug.Log("minYPos = " + minYPos);
-		Debug.Log("maxYPos = " + maxYPos);
-		*/
+		bulletPattern = FindObjectOfType<BulletPattern>();	
     }
 
     void Update()
     {
 		EnforcePositiveSpeed();
 		MovePlayer();
-		FireWeapon();
-		//ConfineToScreenEdges();
+		AttackPrimary();
     }
 
 	void EnforcePositiveSpeed() {if (currentPlayerSpeed < 0.0f) currentPlayerSpeed = 0.0f;}
@@ -70,10 +63,10 @@ public class Player : MonoBehaviour
 		upperRightCorner = Camera.main.ViewportToWorldPoint(new Vector3(1, 1, 0));
 	}
 
-	void FireWeapon()
+	void AttackPrimary()
 	{
 		if (input.isFiringPrimaryWeapon) {
-			primaryAttack.FireBullet();
+			bulletPattern.LaunchPattern();
 		}
 	}
 

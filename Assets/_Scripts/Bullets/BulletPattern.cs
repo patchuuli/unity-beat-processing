@@ -10,22 +10,22 @@ public class BulletPattern : MonoBehaviour
 		Sine: 	2 bullets per fire in sine wave -- medium
 		Flower: 1 larger bullet, explodes into more after x distance - slow
 	*/
+
 	public enum BulletPatternType {
 		Boring, Sine, Flower
 	};
 	public BulletPatternType bulletPatternType;
-
-	private int bulletsPerPattern;
-
-
-
 	public GameObject bulletPrefab;
 	public float bulletSpeed = 50.0f;
 	public float rateOfFire = 0.25f;
 	public float timeSinceLastShot = 0.0f;
 
+	public float sineAmplitude = 2.0f;
+	public float sineFrequency = 1.0f;
+
+	private int bulletsPerPattern;
 	private GameObject[] bulletArr = new GameObject[512];
-	private uint bulletCount = 0;
+	public uint bulletCount = 0;
 	private bool canFire = true;
 	private Player player;
 
@@ -50,15 +50,14 @@ public class BulletPattern : MonoBehaviour
 				InitBoringPattern();
 				break;
 			case (BulletPatternType.Sine):
-				InitSinePattern();
+				//InitSinePattern();
 				break;
 			case (BulletPatternType.Flower):
-				InitFlowerPattern();
+				//InitFlowerPattern();
 				break;
 			default:
 				break;
 		}
-		Debug.Log(bulletPatternType);
 	}
 
 	void InitBoringPattern()
@@ -66,37 +65,82 @@ public class BulletPattern : MonoBehaviour
 		bulletsPerPattern = 1;
 	}
 
-	void InitSinePattern()
-	{
-
-	}
-
-	void InitFlowerPattern()
-	{
-
-	}
-
 	public void LaunchPattern()
 	{
-		if (canFire) {
+		switch(bulletPatternType) {
+			case (BulletPatternType.Boring):
+				LaunchBoringPattern();
+				break;
+			case (BulletPatternType.Sine):
+				LaunchSinePattern();
+				break;
+			case (BulletPatternType.Flower):
+				//InitFlowerPattern();
+				break;
+			default:
+				break;
+		}
+	}
 
+	private void LaunchBoringPattern()
+	{
+		if (canFire) {
 			bulletArr[bulletCount] = Instantiate(bulletPrefab, player.GetPos(), Quaternion.identity);
 			bulletCount++;
-			Debug.Log("bulletCount = " + bulletCount);
+			timeSinceLastShot = 0.0f;
+		}
+	}
+	
+	private void LaunchSinePattern()
+	{
+		if (canFire) {
+			bulletArr[bulletCount++] = Instantiate(bulletPrefab, player.GetPos(), Quaternion.identity);
+			bulletArr[bulletCount++] = Instantiate(bulletPrefab, player.GetPos(), Quaternion.identity);
+			//bulletCount+= 2;
 			timeSinceLastShot = 0.0f;
 		}
 	}
 
 	void MoveBullets()
 	{
-		for (int i = 0; i < bulletCount; i++) {
-			bulletArr[i].transform.position = new Vector3 (
-				bulletArr[i].transform.position.x,
-				bulletArr[i].transform.position.y + bulletSpeed * Time.deltaTime,
-				bulletArr[i].transform.position.z
-			);
+		float bulletX = 0.0f;
+		float bulletY = 0.0f; 
+		float bulletZ = 0.0f;
+
+		if (bulletPatternType == BulletPatternType.Boring) {
+			MoveBoringBullets(bulletX, bulletY, bulletZ);
+		}
+		else if (bulletPatternType == BulletPatternType.Sine) {
+			MoveSineBullets(bulletX, bulletY, bulletZ);
 		}
 	}
+
+	void MoveBoringBullets(float bulletX, float bulletY, float bulletZ)
+	{
+		for (int i = 0; i < bulletCount; i++) {
+			bulletX = bulletArr[i].transform.position.x;
+			bulletY = bulletArr[i].transform.position.y + bulletSpeed * Time.deltaTime;
+			bulletZ = bulletArr[i].transform.position.z;
+			bulletArr[i].transform.position = new Vector3 (bulletX, bulletY, bulletZ);
+		}
+	}
+
+	void MoveSineBullets(float bulletX, float bulletY, float bulletZ)
+	{
+		for (int i = 0; i < bulletCount; i++) {
+			bulletX = sineAmplitude * Mathf.Sin(2*Mathf.PI*sineFrequency*Time.realtimeSinceStartup);
+			bulletY = bulletArr[i].transform.position.y + bulletSpeed/2 * Time.deltaTime;
+			bulletZ = bulletArr[i].transform.position.z;
+			bulletArr[i].transform.position = new Vector3 (bulletX, bulletY, bulletZ);
+			if (i % 2 == 0) {
+				bulletArr[i].transform.position = new Vector3 (-bulletX, bulletY, bulletZ);
+			}
+			else {
+				bulletArr[i].transform.position = new Vector3 (bulletX, bulletY, bulletZ);
+			}
+		}
+	}
+
 	void CoolDown()
 	{
 		if (timeSinceLastShot > (1/rateOfFire)) {

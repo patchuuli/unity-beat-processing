@@ -2175,12 +2175,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f9aefbe14f4acf8cba34df7382e03a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bulletPatternType: 0
+  bulletPatternType: 1
   bulletPrefab: {fileID: 6821005581186035311, guid: a299f9ac4d5ecd05dac12dd252e29d9b,
     type: 3}
   bulletSpeed: 50
-  rateOfFire: 0.25
+  rateOfFire: 10
   timeSinceLastShot: 0
+  sineAmplitude: 3
+  sineFrequency: 1
+  bulletCount: 0
 --- !u!1 &1460692911
 GameObject:
   m_ObjectHideFlags: 0

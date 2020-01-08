@@ -51,7 +51,7 @@ public class BeatDetector : MonoBehaviour
 		}
 		else {
 			bpmInstance = this;
-			DontDestroyOnLoad(this.gameObject);
+			//DontDestroyOnLoad(this.gameObject);
 		}
 	}
 
@@ -62,6 +62,7 @@ public class BeatDetector : MonoBehaviour
 		while (bpm > 180) {
 			bpm /= 2;
 		}
+		Debug.Log("BPM = " + bpm);
 	}
 
 	void SetIntervalValues()

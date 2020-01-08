@@ -12,7 +12,7 @@ public class BandGenerator : MonoBehaviour
 	public ScalingAxis scalingAxis = ScalingAxis.y;
 	private ScalingAxis previousScalingAxis;
 
-    public float bandGap = 0.50f;
+    public float bandGap = 2.0f;
     public float bandBaseScale = 10.0f;
 	public float scaleMultiplier = 100.0f;
 	public bool useBuffer = true;
@@ -54,9 +54,9 @@ public class BandGenerator : MonoBehaviour
             bandInstance.name = "Band" + i;
 			bandInstance.transform.localScale = baseScaleVec;
             bandInstance.transform.position = new Vector3 (
-				this.transform.position.x,
+				bandGap * i,
 				this.transform.position.y,
-				bandGap * i
+				this.transform.position.z
 			);
             bandArr[i] = bandInstance;
         }

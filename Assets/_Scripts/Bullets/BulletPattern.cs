@@ -23,47 +23,30 @@ public class BulletPattern : MonoBehaviour
 	public float sineAmplitude = 2.0f;
 	public float sineFrequency = 1.0f;
 
-	private int bulletsPerPattern;
-	private GameObject[] bulletArr = new GameObject[512];
-	private float[] bulletLaunchPosArr = new float[512];
-	private uint bulletCount = 0;
+	public List<GameObject> bulletList = new List<GameObject>();
+	private List<float> bulletLaunchPos = new List<float>();
+	private List <float> bulletLaunchTime = new List<float>();
 	private bool canFire = true;
 	private Player player;
-
+	private PlayArea playArea;
 
 
     void Start()
     {
-		player = FindObjectOfType<Player>();
-		SetPatternType();
+		SetObjectReferences();
     }
 
     void Update()
     {
 		CoolDown();
 		MoveBullets();
+		RemoveBullets();
     }
 
-	void SetPatternType()
+	void SetObjectReferences()
 	{
-		switch(bulletPatternType) {
-			case (BulletPatternType.Boring):
-				InitBoringPattern();
-				break;
-			case (BulletPatternType.Sine):
-				//InitSinePattern();
-				break;
-			case (BulletPatternType.Flower):
-				//InitFlowerPattern();
-				break;
-			default:
-				break;
-		}
-	}
-
-	void InitBoringPattern()
-	{
-		bulletsPerPattern = 1;
+		player = FindObjectOfType<Player>();
+		playArea = FindObjectOfType<PlayArea>();
 	}
 
 	public void LaunchPattern()
@@ -78,6 +61,9 @@ public class BulletPattern : MonoBehaviour
 			case (BulletPatternType.Flower):
 				//InitFlowerPattern();
 				break;
+			case (BulletPatternType.Burst):
+				LaunchBurstPattern();
+				break;
 			default:
 				break;
 		}
@@ -86,8 +72,7 @@ public class BulletPattern : MonoBehaviour
 	private void LaunchBoringPattern()
 	{
 		if (canFire) {
-			bulletArr[bulletCount] = Instantiate(bulletPrefab, player.GetPos(), Quaternion.identity);
-			bulletCount++;
+			bulletList.Add(Instantiate(bulletPrefab, player.GetPos(), Quaternion.identity));
 			timeSinceLastShot = 0.0f;
 		}
 	}
@@ -95,12 +80,23 @@ public class BulletPattern : MonoBehaviour
 	private void LaunchSinePattern()
 	{
 		if (canFire) {
-			bulletArr[bulletCount] = Instantiate(bulletPrefab, player.GetPos(), Quaternion.identity);
-			bulletLaunchPosArr[bulletCount] = player.GetPos().x;
-			bulletCount++;
-			bulletArr[bulletCount] = Instantiate(bulletPrefab, player.GetPos(), Quaternion.identity);
-			bulletLaunchPosArr[bulletCount] = player.GetPos().x;
-			bulletCount++;
+			for (int i = 0; i < 2; i++) {
+				bulletList.Add(Instantiate(bulletPrefab, player.GetPos(), Quaternion.identity));
+				bulletLaunchPos.Add(player.GetPos().x);
+				bulletLaunchTime.Add(Time.realtimeSinceStartup);
+				//bulletLaunchPos[bulletList.Count-1] = player.GetPos().x;
+				//bulletLaunchTime[bulletList.Count-1] = Time.realtimeSinceStartup;
+			}
+			timeSinceLastShot = 0.0f;
+		}
+	}
+
+	private void LaunchBurstPattern()
+	{
+		if (canFire) {
+			for (int i = 0; i < 3; i++) {
+				bulletList.Add(Instantiate(bulletPrefab, player.GetPos(), Quaternion.identity));
+			}
 			timeSinceLastShot = 0.0f;
 		}
 	}
@@ -117,51 +113,75 @@ public class BulletPattern : MonoBehaviour
 		else if (bulletPatternType == BulletPatternType.Sine) {
 			MoveSineBullets(bulletX, bulletY, bulletZ);
 		}
+		else if (bulletPatternType == BulletPatternType.Burst) {
+			MoveBurstBullets(bulletX, bulletY, bulletZ);
+		}
 	}
 
 	void MoveBoringBullets(float bulletX, float bulletY, float bulletZ)
 	{
-		for (int i = 0; i < bulletCount; i++) {
-			bulletX = bulletArr[i].transform.position.x;
-			bulletY = bulletArr[i].transform.position.y + bulletSpeed * Time.deltaTime;
-			bulletZ = bulletArr[i].transform.position.z;
-			bulletArr[i].transform.position = new Vector3 (bulletX, bulletY, bulletZ);
+		for (int i = 0; i < bulletList.Count; i++) {
+			bulletX = bulletList[i].transform.position.x;
+			bulletY = bulletList[i].transform.position.y + bulletSpeed * Time.deltaTime;
+			bulletZ = bulletList[i].transform.position.z;
+			bulletList[i].transform.position = new Vector3 (bulletX, bulletY, bulletZ);
 		}
 	}
 
 	void MoveSineBullets(float bulletX, float bulletY, float bulletZ)
 	{
-		for (int i = 0; i < bulletCount; i++) {
-			bulletX = sineAmplitude * SineOffset();
-			bulletY = bulletArr[i].transform.position.y + bulletSpeed/2 * Time.deltaTime;
-			bulletZ = bulletArr[i].transform.position.z;
-			//bulletArr[i].transform.position = new Vector3 (bulletX, bulletY, bulletZ);
+		for (int i = 0; i < bulletList.Count; i++) {
+			bulletX = sineAmplitude * SineOffset(i);
+			bulletY = bulletList[i].transform.position.y + bulletSpeed/2 * Time.deltaTime;
+			bulletZ = bulletList[i].transform.position.z;
 			if (i % 2 == 0) {
-				bulletArr[i].transform.position = new Vector3 (bulletLaunchPosArr[i]-bulletX, bulletY, bulletZ);
+				bulletList[i].transform.position = new Vector3 (bulletLaunchPos[i]-bulletX, bulletY, bulletZ);
 			}
 			else {
-				bulletArr[i].transform.position = new Vector3 (bulletLaunchPosArr[i]+bulletX, bulletY, bulletZ);
+				bulletList[i].transform.position = new Vector3 (bulletLaunchPos[i]+bulletX, bulletY, bulletZ);
 			}
-		}
-	}
-
-	private void LaunchBurstPattern()
-	{
-		if (canFire) {
-			bulletArr[bulletCount] = Instantiate(bulletPrefab, player.GetPos(), Quaternion.identity);
-			bulletLaunchPosArr[bulletCount] = player.GetPos().x;
-			bulletCount++;
-			bulletArr[bulletCount] = Instantiate(bulletPrefab, player.GetPos(), Quaternion.identity);
-			bulletLaunchPosArr[bulletCount] = player.GetPos().x;
-			bulletCount++;
-			timeSinceLastShot = 0.0f;
 		}
 	}
 
 	void MoveBurstBullets(float bulletX, float bulletY, float bulletZ)
 	{
-		for (int i = 0; i < bulletCount; i++) {
+		Vector3 leftVec = new Vector3 (
+			-bulletSpeed, 
+			bulletSpeed,
+			0.0f
+		);
+		Vector3 rightVec = new Vector3 (
+			bulletSpeed, 
+			bulletSpeed,
+			0.0f
+		);
 
+		for (int i = 0; i < bulletList.Count; i++) {
+			int direction = 1;
+			/*
+			if (bulletList[i].transform.position.x < playArea.minX || 
+				bulletList[i].transform.position.x > playArea.maxX) {
+				direction = -1;
+			}
+			*/
+
+			if (i % 3 == 0) { // Left
+				bulletList[i].transform.position += new Vector3 (
+					direction * -bulletSpeed * Time.deltaTime,
+					bulletSpeed* Time.deltaTime,
+					0
+				);
+			}
+			else if (i % 3 == 1) { // Middle
+				bulletList[i].transform.position += Vector3.up;
+			}
+			else { // Right
+				bulletList[i].transform.position += new Vector3 (
+					direction * bulletSpeed * Time.deltaTime,
+					bulletSpeed* Time.deltaTime,
+					0
+				);
+			}
 		}
 	}
 
@@ -176,8 +196,23 @@ public class BulletPattern : MonoBehaviour
 		}
 	}
 
-	float SineOffset()
+	float SineOffset(int index)
 	{
-		return Mathf.Sin(2*Mathf.PI*sineFrequency * Time.realtimeSinceStartup);
+		float timePassed = Time.realtimeSinceStartup - bulletLaunchTime[index];
+		return Mathf.Sin(2* Mathf.PI* sineFrequency * timePassed);
+	}
+
+	void RemoveBullets()
+	{
+		for (int i = 0; i < bulletList.Count; i++) {
+			if (bulletList[i].transform.position.y > playArea.maxY) {
+					Destroy(bulletList[i]);
+					bulletList.RemoveAt(i);
+					if(bulletPatternType == BulletPatternType.Sine) {
+						bulletLaunchPos.RemoveAt(i);
+						bulletLaunchTime.RemoveAt(i);
+					}
+			}
+		}
 	}
 }

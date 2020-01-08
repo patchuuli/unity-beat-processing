@@ -46,7 +46,8 @@ public class BeatDetector : MonoBehaviour
     }
 
 	void EnforceSingleton()
-	{ if (bpmInstance != null && bpmInstance != this) {
+	{ 
+		if (bpmInstance != null && bpmInstance != this) {
 			Destroy(this.gameObject);
 		}
 		else {

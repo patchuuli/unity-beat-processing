@@ -128,6 +128,7 @@ public class BulletPattern : MonoBehaviour
 	void MoveSineBullets(float bulletX, float bulletY, float bulletZ)
 	{
 		for (int i = 0; i < bulletCount; i++) {
+			//bulletX = sineAmplitude * Mathf.Sin(2*Mathf.PI*sineFrequency*Time.realtimeSinceStartup);
 			bulletX = sineAmplitude * Mathf.Sin(2*Mathf.PI*sineFrequency*Time.realtimeSinceStartup);
 			bulletY = bulletArr[i].transform.position.y + bulletSpeed/2 * Time.deltaTime;
 			bulletZ = bulletArr[i].transform.position.z;

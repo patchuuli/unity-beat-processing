@@ -172,11 +172,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7787ae2195357ff11b3b2a21e80bbf04, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bulletPatternType: 0
+  bulletPatternType: 1
   bulletPrefab: {fileID: 6821005581186035311, guid: 48909cde26c58be03a3c65c4b38a9a70,
     type: 3}
   bulletSpeed: 50
-  rateOfFire: 0.25
+  rateOfFire: 10
   timeSinceLastShot: 0
   sineAmplitude: 2
   sineFrequency: 1

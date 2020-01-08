@@ -11,16 +11,11 @@ public class Player : MonoBehaviour
 	BulletPattern bulletPattern;
 
 	PlayerInput input;
-	Vector3 lowerLeftCorner;
-	Vector3 upperRightCorner;
-	float cameraXPos, cameraYPos;
-	//float minXPos, maxXPos, minYPos, maxYPos;
+	PlayArea playArea;
 
     void Start()
     {
-		input = GetComponent<PlayerInput>();
-		GetScreenBounds();
-		bulletPattern = FindObjectOfType<BulletPattern>();	
+		SetComponentsReferences();
     }
 
     void Update()
@@ -29,6 +24,13 @@ public class Player : MonoBehaviour
 		MovePlayer();
 		AttackPrimary();
     }
+
+	void SetComponentsReferences()
+	{
+		input = GetComponent<PlayerInput>();
+		playArea = FindObjectOfType<PlayArea>();
+		bulletPattern = FindObjectOfType<BulletPattern>();	
+	}
 
 	void EnforcePositiveSpeed() {if (currentPlayerSpeed < 0.0f) currentPlayerSpeed = 0.0f;}
 
@@ -49,18 +51,11 @@ public class Player : MonoBehaviour
 		if (input.isMovingRight) {
 			moveX += currentPlayerSpeed;
 		}
-		transform.position += new Vector3 (moveX * Time.deltaTime, moveY * Time.deltaTime, 0.0f);
-	}
-
-	void ConfineToScreenEdges()
-	{
-	}
-
-	void GetScreenBounds()
-	{
-		//Renderer renderer = FindObjectOfType<Renderer>();
-		lowerLeftCorner = Camera.main.ViewportToWorldPoint(Vector3.zero);
-		upperRightCorner = Camera.main.ViewportToWorldPoint(new Vector3(1, 1, 0));
+		transform.position = new Vector3(
+			Mathf.Clamp(transform.position.x + moveX * Time.deltaTime, playArea.minX, playArea.maxX),
+			Mathf.Clamp(transform.position.y + moveY * Time.deltaTime, playArea.minY, playArea.maxY),
+			transform.position.z
+		);
 	}
 
 	void AttackPrimary()

@@ -25,7 +25,8 @@ public class BulletPattern : MonoBehaviour
 
 	public List<GameObject> bulletList = new List<GameObject>();
 	private List<float> bulletLaunchPos = new List<float>();
-	private List <float> bulletLaunchTime = new List<float>();
+	private List<float> bulletLaunchTime = new List<float>();
+	private List<short> burstBulletDirection = new List<short>();
 	private bool canFire = true;
 	private Player player;
 	private PlayArea playArea;
@@ -96,6 +97,9 @@ public class BulletPattern : MonoBehaviour
 		if (canFire) {
 			for (int i = 0; i < 3; i++) {
 				bulletList.Add(Instantiate(bulletPrefab, player.GetPos(), Quaternion.identity));
+				burstBulletDirection.Add(-1);
+				burstBulletDirection.Add(0);
+				burstBulletDirection.Add(1);
 			}
 			timeSinceLastShot = 0.0f;
 		}
@@ -135,11 +139,9 @@ public class BulletPattern : MonoBehaviour
 			bulletY = bulletList[i].transform.position.y + bulletSpeed/2 * Time.deltaTime;
 			bulletZ = bulletList[i].transform.position.z;
 			if (i % 2 == 0) {
-				bulletList[i].transform.position = new Vector3 (bulletLaunchPos[i]-bulletX, bulletY, bulletZ);
+				bulletX *= -1;
 			}
-			else {
-				bulletList[i].transform.position = new Vector3 (bulletLaunchPos[i]+bulletX, bulletY, bulletZ);
-			}
+			bulletList[i].transform.position = new Vector3 (bulletLaunchPos[i]+bulletX, bulletY, bulletZ);
 		}
 	}
 
@@ -157,17 +159,15 @@ public class BulletPattern : MonoBehaviour
 		);
 
 		for (int i = 0; i < bulletList.Count; i++) {
-			int direction = 1;
-			/*
-			if (bulletList[i].transform.position.x < playArea.minX || 
-				bulletList[i].transform.position.x > playArea.maxX) {
-				direction = -1;
+
+			if (bulletList[i].transform.position.x > playArea.maxX || 
+				bulletList[i].transform.position.x < playArea.minX) {
+				burstBulletDirection[i] *= -1;
 			}
-			*/
 
 			if (i % 3 == 0) { // Left
 				bulletList[i].transform.position += new Vector3 (
-					direction * -bulletSpeed * Time.deltaTime,
+					burstBulletDirection[i] * bulletSpeed * Time.deltaTime,
 					bulletSpeed* Time.deltaTime,
 					0
 				);
@@ -177,7 +177,7 @@ public class BulletPattern : MonoBehaviour
 			}
 			else { // Right
 				bulletList[i].transform.position += new Vector3 (
-					direction * bulletSpeed * Time.deltaTime,
+					burstBulletDirection[i] * bulletSpeed * Time.deltaTime,
 					bulletSpeed* Time.deltaTime,
 					0
 				);
@@ -206,12 +206,15 @@ public class BulletPattern : MonoBehaviour
 	{
 		for (int i = 0; i < bulletList.Count; i++) {
 			if (bulletList[i].transform.position.y > playArea.maxY) {
-					Destroy(bulletList[i]);
-					bulletList.RemoveAt(i);
-					if(bulletPatternType == BulletPatternType.Sine) {
-						bulletLaunchPos.RemoveAt(i);
-						bulletLaunchTime.RemoveAt(i);
-					}
+				Destroy(bulletList[i]);
+				bulletList.RemoveAt(i);
+				if(bulletPatternType == BulletPatternType.Sine) {
+					bulletLaunchPos.RemoveAt(i);
+					bulletLaunchTime.RemoveAt(i);
+				}
+				else if(bulletPatternType == BulletPatternType.Burst) {
+					burstBulletDirection.RemoveAt(i);
+				}
 			}
 		}
 	}

@@ -11,6 +11,8 @@ public class BulletPattern : MonoBehaviour
 		Flower: 1 larger bullet, explodes into more after x distance - slow
 	*/
 
+	public int MAX_BULLETS = 100;
+
 	public enum BulletPatternType {
 		Boring, Sine, Burst, Flower
 	};
@@ -173,7 +175,7 @@ public class BulletPattern : MonoBehaviour
 				);
 			}
 			else if (i % 3 == 1) { // Middle
-				bulletList[i].transform.position += Vector3.up;
+				bulletList[i].transform.position += Vector3.up * bulletSpeed * Time.deltaTime;
 			}
 			else { // Right
 				bulletList[i].transform.position += new Vector3 (
@@ -216,6 +218,12 @@ public class BulletPattern : MonoBehaviour
 					burstBulletDirection.RemoveAt(i);
 				}
 			}
+		}
+		if (bulletList.Count > MAX_BULLETS) {
+			bulletList.TrimExcess();
+			bulletLaunchTime.TrimExcess();
+			bulletLaunchPos.TrimExcess();
+			burstBulletDirection.TrimExcess();
 		}
 	}
 }

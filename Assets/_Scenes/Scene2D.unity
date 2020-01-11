@@ -192,6 +192,21 @@ PrefabInstance:
       propertyPath: orthographic size
       value: 20
       objectReference: {fileID: 0}
+    - target: {fileID: 8580259655793863438, guid: 53fded82a645c225aabbc6fbbf97cffe,
+        type: 3}
+      propertyPath: m_BackGroundColor.r
+      value: 0.7169812
+      objectReference: {fileID: 0}
+    - target: {fileID: 8580259655793863438, guid: 53fded82a645c225aabbc6fbbf97cffe,
+        type: 3}
+      propertyPath: m_BackGroundColor.g
+      value: 0.7169812
+      objectReference: {fileID: 0}
+    - target: {fileID: 8580259655793863438, guid: 53fded82a645c225aabbc6fbbf97cffe,
+        type: 3}
+      propertyPath: m_BackGroundColor.b
+      value: 0.7169812
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 53fded82a645c225aabbc6fbbf97cffe, type: 3}
 --- !u!1001 &125034245496579385
@@ -274,6 +289,11 @@ PrefabInstance:
         type: 3}
       propertyPath: bulletPatternType
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1743551470535153482, guid: 49cbefaa0a0c7ab0ea4a2180896c3ae6,
+        type: 3}
+      propertyPath: rateOfFire
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 1743551470535153483, guid: 49cbefaa0a0c7ab0ea4a2180896c3ae6,
         type: 3}
@@ -403,16 +423,21 @@ PrefabInstance:
         type: 3}
       propertyPath: m_audioClip
       value: 
-      objectReference: {fileID: 8300000, guid: 24f30c7f620ef3c38906a0cf9550382a, type: 3}
+      objectReference: {fileID: 8300000, guid: 835b50285bc9ee6d192b7292d55b77ba, type: 3}
+    - target: {fileID: 1201908400049181812, guid: 27a00d7248f6dd91aa516f9901ef1095,
+        type: 3}
+      propertyPath: BANDS
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1201908400049181812, guid: 27a00d7248f6dd91aa516f9901ef1095,
+        type: 3}
+      propertyPath: amplitudeSpikeThreshold
+      value: 0.08
+      objectReference: {fileID: 0}
     - target: {fileID: 1201908400049181813, guid: 27a00d7248f6dd91aa516f9901ef1095,
         type: 3}
       propertyPath: m_Name
       value: AudioProcessor
-      objectReference: {fileID: 0}
-    - target: {fileID: 1266698937437562851, guid: 27a00d7248f6dd91aa516f9901ef1095,
-        type: 3}
-      propertyPath: bandGap
-      value: 2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 27a00d7248f6dd91aa516f9901ef1095, type: 3}

@@ -6,13 +6,18 @@ using UnityEngine;
 public class AudioProcessor : MonoBehaviour
 {
 
+	public float amplitudeSpikeThreshold = 0.2f;
+
+	private float[] prevBand;
+	
 	AudioSource audioSource;
 	int audioFreq;
 	float hertzPerSample;
 	public int BANDS = 7;
-	const int numSamples = 256;
 	const FFTWindow fftWindowType = FFTWindow.BlackmanHarris;
 	
+	//const int numSamples = 256;
+	private int numSamples;
 	private float[] samplesLeft;
 	private float[] samplesRight;
 	private float[] freqBands;
@@ -28,7 +33,8 @@ public class AudioProcessor : MonoBehaviour
 	private float amplitudeHighest;
 
 	public float averageAmplitude;
-	public float audioProfile = 5;
+	public float prevAverageAmplitude;
+	//public float audioProfile = 5;
 	public float barFallAccel = 1.20f;
 	public float barFallBaseSpeed = 0.01f;
 
@@ -41,6 +47,7 @@ public class AudioProcessor : MonoBehaviour
     void Start()
     {
 		InitData(BANDS);
+		audioSource.time = 15.0f;
 		PichardoStart();
     }
 
@@ -52,6 +59,8 @@ public class AudioProcessor : MonoBehaviour
 		PichardoUpdate();
 		GetSpectrumAudioSource();
 		MakeFreqBands(BANDS);
+		CheckAmplitudeSpikeUnweighted();
+		CheckAmplitudeSpikeWeighted();
 		BandBuffer(BANDS);
 		CreateAudioBands(BANDS);
 		GetAmplitude(BANDS);
@@ -59,8 +68,10 @@ public class AudioProcessor : MonoBehaviour
 
 	void InitData(int numBands)
 	{
+		numSamples = (int) Mathf.Pow(2, numBands+1);
 		audioSource = GetComponent<AudioSource>();
 		audioBand = new float[numBands];
+		prevBand = new float[numBands];
 		audioBandBuffer = new float[numBands];
 		channel = Channel.Stereo;
 		//AudioProfile(audioProfile, numBands);	
@@ -80,15 +91,19 @@ public class AudioProcessor : MonoBehaviour
 	void MakeFreqBands(int numBands)
 	{
 		int count = 0;
-		averageAmplitude = 0.0f;
+		//prevBand = freqBands;
+		for (int i = 0; i < numBands; i++) {
+			prevBand[i] = freqBands[i];
+		}
 
 		for (int i = 0; i < numBands; i++) {
+
 			float average = 0.0f;
 			int sampleCount = (int) Mathf.Pow(2,i) * 2; // the number of samples within band 'i'
+
 			if (i == numBands - 1) {
 				sampleCount += 2;
 			}
-			//Debug.Log("sampleCount " + i + ": " + sampleCount);
 
 			for (int j = 0; j < sampleCount/(numBands/7); j++) { // find average of all amplitudes in band 'i'
 				if (channel == Channel.Stereo) {
@@ -102,12 +117,11 @@ public class AudioProcessor : MonoBehaviour
 				}
 				count++;
 			}
+
 			average /= count;
 			freqBands[i] = average * 10;
-			averageAmplitude += freqBands[i];
 		}
-		//Debug.Log("Total sample count = " + count); 
-		averageAmplitude /= numBands;
+		GetAverageAmplitude();
 	}
 
 	void BandBuffer(int numBands)
@@ -121,6 +135,8 @@ public class AudioProcessor : MonoBehaviour
 				bandBuffer[i] = freqBands[i];
 				bufferDecrease[i] = barFallBaseSpeed;
 			}
+			if (freqBands[i] < 0.0f) 	freqBands[i] = 0.0f;
+			if (bandBuffer[i] < 0.0f) 	bandBuffer[i] = 0.0f;
 		}
 
 	}
@@ -159,6 +175,63 @@ public class AudioProcessor : MonoBehaviour
 	}
 
 
+
+	/*
+	Goal here is to see if the difference between the previous frame's average amp. and the current average amp. 
+	is large enough to suggest a beat/spike (the threshold is given in the amplitudeSpikeThreshold variable.
+
+	Want to put more emphasis on the kick range (subbass = band 0 // bass = band 1 ) 
+	and clap range (upperMidRange = band 4... maybe presence of mid too??)
+
+	Maybe check both weighted and unweighted and see if they agree
+	*/
+
+	void GetAverageAmplitude()
+	{
+		prevAverageAmplitude = averageAmplitude;
+		averageAmplitude = 0.0f;
+		for (int i = 0; i < BANDS; i++) {
+			averageAmplitude += freqBands[i];
+		}
+		averageAmplitude /= BANDS;
+	}
+
+	void CheckAmplitudeSpikeUnweighted()
+	{
+		if ( (averageAmplitude - prevAverageAmplitude) > amplitudeSpikeThreshold) {
+			Debug.Log("SPIKE (UNWEIGHTED)");
+		}
+	}
+
+	void CheckAmplitudeSpikeWeighted()
+	{
+		float bassWeight = 0.7f;
+		float subBassWeight = 1 - bassWeight;
+		float subBassDampen = 0.7f;
+
+		float prevBass 	= prevBand[0] + prevBand[1];
+		float newBass  	= (freqBands[0] * subBassWeight * subBassDampen) + (freqBands[1] * bassWeight);
+		float bassDiff 	= (newBass - prevBass) / 2;
+
+		/*
+		float prevHigh 	= prevBand[4] + prevBand[5];
+		float newHigh  	= freqBands[4] + freqBands[5];
+		*/
+		float prevHigh 	= prevBand[5] + prevBand[6];
+		float newHigh  	= freqBands[5] + freqBands[6];
+		float highDiff 	= (newHigh - prevHigh) / 2;
+
+		/*
+		Debug.Log("Bass diff = " + bassDiff);
+		Debug.Log("High diff = " + highDiff);
+		Debug.Log("Weighted diff = " + (bassDiff + highDiff - amplitudeSpikeThreshold));
+		*/
+
+		if ( bassDiff /*+ highDiff */> amplitudeSpikeThreshold) {
+			Debug.Log("SPIKE (WEIGHTED)");
+		}
+
+	}
 
 
 

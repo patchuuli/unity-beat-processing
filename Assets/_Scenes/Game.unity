@@ -209,6 +209,24 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 53fded82a645c225aabbc6fbbf97cffe, type: 3}
+--- !u!1 &806545042 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1201908400049181813, guid: 27a00d7248f6dd91aa516f9901ef1095,
+    type: 3}
+  m_PrefabInstance: {fileID: 2956888110340501223}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &806545046
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 806545042}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ada5a7fed7c7e94728af0ef340e8902e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &125034245496579385
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -254,7 +272,7 @@ PrefabInstance:
     - target: {fileID: 125034245831370800, guid: 27ce83151ec3f70ed96486382191b037,
         type: 3}
       propertyPath: m_RootOrder
-      value: 3
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 125034245831370800, guid: 27ce83151ec3f70ed96486382191b037,
         type: 3}
@@ -338,7 +356,7 @@ PrefabInstance:
     - target: {fileID: 1743551470535153487, guid: 49cbefaa0a0c7ab0ea4a2180896c3ae6,
         type: 3}
       propertyPath: m_RootOrder
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 1743551470535153487, guid: 49cbefaa0a0c7ab0ea4a2180896c3ae6,
         type: 3}
@@ -402,7 +420,7 @@ PrefabInstance:
     - target: {fileID: 1201908400049181810, guid: 27a00d7248f6dd91aa516f9901ef1095,
         type: 3}
       propertyPath: m_RootOrder
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 1201908400049181810, guid: 27a00d7248f6dd91aa516f9901ef1095,
         type: 3}
@@ -433,6 +451,21 @@ PrefabInstance:
         type: 3}
       propertyPath: amplitudeSpikeThreshold
       value: 0.08
+      objectReference: {fileID: 0}
+    - target: {fileID: 1201908400049181812, guid: 27a00d7248f6dd91aa516f9901ef1095,
+        type: 3}
+      propertyPath: timeBetweenBeatChecks
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1201908400049181812, guid: 27a00d7248f6dd91aa516f9901ef1095,
+        type: 3}
+      propertyPath: bassSpikeThreshold
+      value: 0.08
+      objectReference: {fileID: 0}
+    - target: {fileID: 1201908400049181812, guid: 27a00d7248f6dd91aa516f9901ef1095,
+        type: 3}
+      propertyPath: bassSpikeTiming
+      value: 0.2
       objectReference: {fileID: 0}
     - target: {fileID: 1201908400049181813, guid: 27a00d7248f6dd91aa516f9901ef1095,
         type: 3}

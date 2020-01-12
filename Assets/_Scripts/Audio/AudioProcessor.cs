@@ -7,6 +7,11 @@ public class AudioProcessor : MonoBehaviour
 {
 
 	public float amplitudeSpikeThreshold = 0.2f;
+	public float highSpikeThreshold = 0.2f;
+
+	public float bassSpikeThreshold = 0.08f;
+	public float bassSpikeTiming = 0.01f;
+	private float bassSinceLast = 0.0f;
 
 	private float[] prevBand;
 	
@@ -32,8 +37,9 @@ public class AudioProcessor : MonoBehaviour
 
 	private float amplitudeHighest;
 
-	public float averageAmplitude;
-	public float prevAverageAmplitude;
+	[HideInInspector]
+	public float averageAmplitude, prevAverageAmplitude;
+
 	//public float audioProfile = 5;
 	public float barFallAccel = 1.20f;
 	public float barFallBaseSpeed = 0.01f;
@@ -59,8 +65,9 @@ public class AudioProcessor : MonoBehaviour
 		PichardoUpdate();
 		GetSpectrumAudioSource();
 		MakeFreqBands(BANDS);
-		CheckAmplitudeSpikeUnweighted();
-		CheckAmplitudeSpikeWeighted();
+		//CheckAmplitudeSpikeUnweighted();
+		//CheckAmplitudeSpikeWeighted();
+		CheckBassSpike();
 		BandBuffer(BANDS);
 		CreateAudioBands(BANDS);
 		GetAmplitude(BANDS);
@@ -203,34 +210,32 @@ public class AudioProcessor : MonoBehaviour
 		}
 	}
 
-	void CheckAmplitudeSpikeWeighted()
+	void CheckBassSpike()
 	{
-		float bassWeight = 0.7f;
+		float bassWeight = 0.6f;
 		float subBassWeight = 1 - bassWeight;
-		float subBassDampen = 0.7f;
+		float subBassDampen = 1.0f;
 
 		float prevBass 	= prevBand[0] + prevBand[1];
 		float newBass  	= (freqBands[0] * subBassWeight * subBassDampen) + (freqBands[1] * bassWeight);
 		float bassDiff 	= (newBass - prevBass) / 2;
 
-		/*
-		float prevHigh 	= prevBand[4] + prevBand[5];
-		float newHigh  	= freqBands[4] + freqBands[5];
-		*/
+		bassSinceLast += Time.deltaTime;
+		if (bassDiff > bassSpikeThreshold && bassSinceLast > bassSpikeTiming) {
+			Debug.Log("BASS");
+			bassSinceLast = 0.0f;
+		}
+	}
+
+	void CheckHighSpike()
+	{
 		float prevHigh 	= prevBand[5] + prevBand[6];
 		float newHigh  	= freqBands[5] + freqBands[6];
 		float highDiff 	= (newHigh - prevHigh) / 2;
+	}
 
-		/*
-		Debug.Log("Bass diff = " + bassDiff);
-		Debug.Log("High diff = " + highDiff);
-		Debug.Log("Weighted diff = " + (bassDiff + highDiff - amplitudeSpikeThreshold));
-		*/
-
-		if ( bassDiff /*+ highDiff */> amplitudeSpikeThreshold) {
-			Debug.Log("SPIKE (WEIGHTED)");
-		}
-
+	void CheckAmplitudeSpikeWeighted()
+	{
 	}
 
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
 public class BandGenerator : MonoBehaviour
 {
 	public enum ScalingAxis {x,y,z};
@@ -19,9 +20,11 @@ public class BandGenerator : MonoBehaviour
 
 	private Vector3 baseScaleVec;
 	private AudioProcessor audioProcessor;
-	private int numBands;
+
 	private Vector3 scaleVec;
 	private Vector3 positionVec;
+
+	public uint numBands;
 
     void Start()
     {
@@ -37,7 +40,6 @@ public class BandGenerator : MonoBehaviour
 	void Init()
 	{
 		audioProcessor = FindObjectOfType<AudioProcessor>();
-		numBands = audioProcessor.BANDS;
 		bandArr = new GameObject[numBands];
 
 		baseScaleVec = new Vector3 (bandBaseScale, bandBaseScale, bandBaseScale);
@@ -147,3 +149,4 @@ public class BandGenerator : MonoBehaviour
 		}
 	}
 }
+*/

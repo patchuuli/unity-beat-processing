@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
 public class ReactToBeat : MonoBehaviour
 {
 	public enum AttributeType {
@@ -44,15 +45,10 @@ public class ReactToBeat : MonoBehaviour
 		float j = audioProcessor.averageAmplitude;
     }
 
-
-	/***************************************************
-						AMPLITUDE
-	***************************************************/
+	//AMPLITUDE
 	float GetAvgAmplitude(){return audioProcessor.averageAmplitude;}
 
-	/***************************************************
-						LIGHTING
-	***************************************************/
+	//LIGHTING
 
 	void LightToBeat()
 	{
@@ -99,9 +95,7 @@ public class ReactToBeat : MonoBehaviour
 
 	void SetFullLight() {lightComponent.intensity = maxIntensity;}
 
-	/***************************************************
-						SCALING
-	***************************************************/
+	//SCALING
 
 	void ScaleToBeat()
 	{
@@ -163,3 +157,5 @@ public class ReactToBeat : MonoBehaviour
 
 	}
 }
+
+*/

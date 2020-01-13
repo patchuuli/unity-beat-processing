@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
 public class LightOnAudio : MonoBehaviour
 {
     public int bandNum;
@@ -20,3 +21,4 @@ public class LightOnAudio : MonoBehaviour
 		_light.intensity = (audioProcessor.audioBandBuffer[bandNum] * (maxIntensity - minIntensity)) + minIntensity;
     }
 }
+*/

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
 public class ScaleOnFreqRange : MonoBehaviour
 {
 	public enum FrequencyRange {
@@ -28,11 +29,9 @@ public class ScaleOnFreqRange : MonoBehaviour
     void Start()
     {
         audioProcessor = FindObjectOfType<AudioProcessor>();
-		/*
-		Debug.Log("Subbass = " + (int)FrequencyRange.SubBass);
-		Debug.Log("Bass = " + (int)FrequencyRange.Bass);
-		Debug.Log("LowMidRange = " + (int)FrequencyRange.LowMidRange);
-		*/
+		//Debug.Log("Subbass = " + (int)FrequencyRange.SubBass);
+		//Debug.Log("Bass = " + (int)FrequencyRange.Bass);
+		//Debug.Log("LowMidRange = " + (int)FrequencyRange.LowMidRange);
     }
 
     void Update()
@@ -58,3 +57,4 @@ public class ScaleOnFreqRange : MonoBehaviour
     }
 
 }
+*/

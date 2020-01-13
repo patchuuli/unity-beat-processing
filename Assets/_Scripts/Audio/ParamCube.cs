@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
 public class ParamCube : MonoBehaviour
 {
     public int bandNum;
@@ -50,3 +51,4 @@ public class ParamCube : MonoBehaviour
 		}
     }
 }
+*/

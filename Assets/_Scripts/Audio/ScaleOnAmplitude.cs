@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
 public class ScaleOnAmplitude : MonoBehaviour
 {
     public float startScale = 0.5f;
@@ -40,3 +41,4 @@ public class ScaleOnAmplitude : MonoBehaviour
     }
 
 }
+*/

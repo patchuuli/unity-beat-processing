@@ -17,6 +17,7 @@
 using UnityEngine;
 using System;
 
+/*
 public class Example : MonoBehaviour
 {
     
@@ -50,3 +51,4 @@ public class Example : MonoBehaviour
 		}
 	}
 }
+*/

@@ -1,4 +1,237 @@
-﻿using System.Collections;
+﻿#define NEW
+
+
+#if NEW
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+[RequireComponent (typeof(AudioSource))]
+
+public class AudioProcessor : MonoBehaviour
+{
+
+	private enum FreqRange {
+		Full,
+		SubBass,
+		Bass,
+		LowMidrange,
+		Midrange,
+		UpperMidrange,
+		Presence,
+		Brilliance
+	};
+
+	private float[] spectrumData;
+	private float[] prevSpectrumData;
+
+	private int numSamples = 1024;
+	private int frequency;
+	private int frequencyNyquist;
+	private float freqPerBin;
+
+	//public float fluxThreshold = 0.6f;
+	//private int thresholdWindowSize = 30;
+	//private float thresholdMultiplier = 1.0f;
+
+	private int subBassMinIndex;
+	private int subBassMaxIndex;
+	private int bassMinIndex;
+	private int bassMaxIndex;
+	private int lowMidrangeMinIndex;
+	private int lowMidrangeMaxIndex;
+	private int midrangeMinIndex;
+	private int midrangeMaxIndex;
+	private int upperMidrangeMinIndex;
+	private int upperMidrangeMaxIndex;
+	private int presenceMinIndex;
+	private int presenceMaxIndex;
+	private int brillianceMinIndex;
+	private int brillianceMaxIndex;
+
+	private AudioSource audioSource;
+	private SpectralFluxAnalyzer analyzer;
+	//private BandGenerator bandGenerator;
+
+	/*
+	TODO:
+		Notice how the max brilliance index is only 800 or something. 
+		Maybe make curSpectrum[] and prevSpectrum[] only be of length [maxBrillianceIndex]
+	*/
+
+    void Start()
+    {
+		audioSource = GetComponent<AudioSource>();
+		analyzer =  GetComponent<SpectralFluxAnalyzer>();
+		spectrumData = new float[numSamples];
+		/*
+		prevSpectrumData = new float[numSamples];
+		frequency = audioSource.clip.frequency;
+		frequencyNyquist = frequency / 2;
+		freqPerBin = (float) frequencyNyquist / (float) numSamples;
+
+		audioSource.time = 17f;
+
+		Debug.Log("Samples: " + numSamples);
+		Debug.Log("Frequency: " + frequency);
+		Debug.Log("Nyquist Point: " + frequencyNyquist);
+		Debug.Log("Frequency per bin: " + freqPerBin);
+
+		SetFreqRanges();
+		*/
+    }
+
+    void Update()
+    {
+		audioSource.GetSpectrumData(spectrumData, 0, FFTWindow.BlackmanHarris);
+		analyzer.analyzeSpectrum(spectrumData, audioSource.time);
+		/*
+		GetCurrentSpectrumData();
+		if (GetSpectralFlux(FreqRange.Bass) > fluxThreshold ||
+			GetSpectralFlux(FreqRange.Bass) > fluxThreshold) {
+			Debug.Log("KICK");
+		}
+		if (GetSpectralFlux(FreqRange.Midrange) > fluxThreshold ||
+			GetSpectralFlux(FreqRange.UpperMidrange) > fluxThreshold) {
+			Debug.Log("CLAP");
+		}
+		*/
+    }
+
+	void SetFreqRanges()
+	{
+		subBassMinIndex = (int) (20f/freqPerBin);
+		subBassMaxIndex = (int) (60f/freqPerBin);
+
+		bassMinIndex = subBassMaxIndex;
+		bassMaxIndex = (int) (250f/freqPerBin);
+
+		lowMidrangeMinIndex = bassMaxIndex;
+		lowMidrangeMaxIndex = (int) (500f/freqPerBin);
+
+		midrangeMinIndex = lowMidrangeMaxIndex;
+		midrangeMaxIndex = (int) (2000f/freqPerBin);
+
+		upperMidrangeMinIndex = midrangeMaxIndex;
+		upperMidrangeMaxIndex = (int) (4000f/freqPerBin);
+
+		presenceMinIndex = upperMidrangeMaxIndex;
+		presenceMaxIndex = (int) (6000f/freqPerBin);
+
+		brillianceMinIndex = presenceMaxIndex;
+		brillianceMaxIndex = (int) (20000f/freqPerBin);
+
+		/*
+		Debug.Log("SUBBASS: " + subBassMinIndex + " -> " + subBassMaxIndex);
+		Debug.Log("BASS: " + bassMinIndex + " -> " + bassMaxIndex);
+		Debug.Log("LOW MID: " + lowMidrangeMinIndex + " -> " + lowMidrangeMaxIndex);
+		Debug.Log("MID: " + midrangeMinIndex + " -> " + midrangeMaxIndex);
+		Debug.Log("UPPER MID: " + upperMidrangeMinIndex + " -> " + upperMidrangeMaxIndex);
+		Debug.Log("PRESENCE: " + presenceMinIndex + " -> " + presenceMaxIndex);
+		Debug.Log("BRILLIANCE: " + brillianceMinIndex + " -> " + brillianceMaxIndex);
+		*/
+	}
+
+	void GetCurrentSpectrumData()
+	{
+		spectrumData.CopyTo(prevSpectrumData, 0);
+        audioSource.GetSpectrumData(spectrumData, 0, FFTWindow.BlackmanHarris);
+	}
+
+	float GetSpectralFlux(FreqRange range)
+	{
+		int firstSampleIndex, lastSampleIndex;
+		switch (range) {
+			case (FreqRange.Full):
+			firstSampleIndex = 0;
+			lastSampleIndex = numSamples-1;
+			break;
+
+			case (FreqRange.SubBass):
+			firstSampleIndex = subBassMinIndex;
+			lastSampleIndex = subBassMaxIndex;
+			break;
+			
+			case (FreqRange.Bass):
+			firstSampleIndex = bassMinIndex;
+			lastSampleIndex = bassMaxIndex;
+			break;
+
+			case (FreqRange.LowMidrange):
+			firstSampleIndex = lowMidrangeMinIndex;
+			lastSampleIndex = lowMidrangeMaxIndex;
+			break;
+
+			case (FreqRange.Midrange):
+			firstSampleIndex = midrangeMinIndex;
+			lastSampleIndex = midrangeMaxIndex;
+			break;
+
+			case (FreqRange.UpperMidrange):
+			firstSampleIndex = upperMidrangeMinIndex;
+			lastSampleIndex = upperMidrangeMaxIndex;
+			break;
+
+			case (FreqRange.Presence):
+			firstSampleIndex = lowMidrangeMinIndex;
+			lastSampleIndex = lowMidrangeMaxIndex;
+			break;
+
+			case (FreqRange.Brilliance):
+			firstSampleIndex = brillianceMinIndex;
+			lastSampleIndex = brillianceMaxIndex;
+			break;
+
+			default:
+			firstSampleIndex = 0;
+			lastSampleIndex = numSamples-1;
+			break;
+		}
+
+		float flux = 0f;
+		for (int i = firstSampleIndex; i <= lastSampleIndex; i++) {
+			flux += Mathf.Max(0f, spectrumData[i] - prevSpectrumData[i]);
+		}
+		return flux;
+	}
+
+	float GetFluxThreshold(int index)
+	{
+		int windowStartIndex = Mathf.Max(0, index - thresholdWindowSize/2);
+		int windowEndIndex = Mathf.Max(numSamples-1, index + thresholdWindowSize/2);
+
+		float sum = 0.0f;
+		for (int i = windowStartIndex; i < windowEndIndex; i++) {
+			sum += Mathf.Max(0f, spectrumData[i] - prevSpectrumData[i]);
+		}
+
+		float avg = sum / (windowEndIndex - windowStartIndex);
+		return avg;
+	}
+
+/*
+	float AnalyzeSpectrum()
+	{
+		SpectralFluxInfo curInfo = new SpectralFluxInfo();
+		curInfo.time = Time.time;
+		curInfo.spectralFlux = GetSpectralFlux(FreqRange.Full);
+
+		return 0f;
+	}
+	*/
+
+}
+
+
+#endif
+
+
+
+
+
+
+#if !NEW
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -646,4 +879,4 @@ public class AudioProcessor : MonoBehaviour
 		}
 	}
 }
-
+#endif

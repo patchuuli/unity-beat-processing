@@ -1,31 +1,47 @@
-﻿#define NEW
-
-
-#if NEW
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent (typeof(AudioSource))]
+/*
+TODO:
+	Edit "SpectralFluxAnalyzer::analyzeSpectrum take an extra argument to set the FreqRange
+	Will have to make FreqRange visible to that class
 
+	Notice how the max brilliance index is only 800 or something. 
+	Maybe make curSpectrum[] and prevSpectrum[] only be of length [maxBrillianceIndex]
+
+*/
+
+[RequireComponent (typeof(AudioSource))]
+[RequireComponent (typeof(SpectralFluxAnalyzer))]
+//[RequireComponent (typeof(BandGenerator))]
 public class AudioProcessor : MonoBehaviour
 {
 
-	private enum FreqRange {
-		Full,
+	public enum FreqRange {
 		SubBass,
 		Bass,
 		LowMidrange,
 		Midrange,
 		UpperMidrange,
 		Presence,
-		Brilliance
+		Brilliance,
+		Full
 	};
+
+	public struct SpectrumRange {
+		public string name;
+		public int min;
+		public int max;
+	};
+
+	private SpectrumRange[] spectrumRange;
+	private SpectrumRange rangeToProcess;
 
 	private float[] spectrumData;
 	private float[] prevSpectrumData;
 
-	private int numSamples = 1024;
+	public int numSamples = 1024;
 	private int frequency;
 	private int frequencyNyquist;
 	private float freqPerBin;
@@ -34,57 +50,25 @@ public class AudioProcessor : MonoBehaviour
 	//private int thresholdWindowSize = 30;
 	//private float thresholdMultiplier = 1.0f;
 
-	private int subBassMinIndex;
-	private int subBassMaxIndex;
-	private int bassMinIndex;
-	private int bassMaxIndex;
-	private int lowMidrangeMinIndex;
-	private int lowMidrangeMaxIndex;
-	private int midrangeMinIndex;
-	private int midrangeMaxIndex;
-	private int upperMidrangeMinIndex;
-	private int upperMidrangeMaxIndex;
-	private int presenceMinIndex;
-	private int presenceMaxIndex;
-	private int brillianceMinIndex;
-	private int brillianceMaxIndex;
-
 	private AudioSource audioSource;
-	private SpectralFluxAnalyzer analyzer;
-	//private BandGenerator bandGenerator;
+	private SpectralFluxAnalyzer spectrumAnalyzer;
+	private BandGenerator bandGenerator;
 
-	/*
-	TODO:
-		Notice how the max brilliance index is only 800 or something. 
-		Maybe make curSpectrum[] and prevSpectrum[] only be of length [maxBrillianceIndex]
-	*/
 
     void Start()
     {
 		audioSource = GetComponent<AudioSource>();
-		analyzer =  GetComponent<SpectralFluxAnalyzer>();
+		audioSource.Play();
+		spectrumAnalyzer =  GetComponent<SpectralFluxAnalyzer>();
 		spectrumData = new float[numSamples];
-		/*
-		prevSpectrumData = new float[numSamples];
-		frequency = audioSource.clip.frequency;
-		frequencyNyquist = frequency / 2;
-		freqPerBin = (float) frequencyNyquist / (float) numSamples;
-
-		audioSource.time = 17f;
-
-		Debug.Log("Samples: " + numSamples);
-		Debug.Log("Frequency: " + frequency);
-		Debug.Log("Nyquist Point: " + frequencyNyquist);
-		Debug.Log("Frequency per bin: " + freqPerBin);
-
-		SetFreqRanges();
-		*/
+		GetFreqDataFromClip();
+		SetSpectrumRange(FreqRange.Bass);
     }
 
     void Update()
     {
 		audioSource.GetSpectrumData(spectrumData, 0, FFTWindow.BlackmanHarris);
-		analyzer.analyzeSpectrum(spectrumData, audioSource.time);
+		spectrumAnalyzer.analyzeSpectrum(spectrumData, audioSource.time, rangeToProcess);
 		/*
 		GetCurrentSpectrumData();
 		if (GetSpectralFlux(FreqRange.Bass) > fluxThreshold ||
@@ -98,38 +82,52 @@ public class AudioProcessor : MonoBehaviour
 		*/
     }
 
-	void SetFreqRanges()
+	void GetFreqDataFromClip()
 	{
-		subBassMinIndex = (int) (20f/freqPerBin);
-		subBassMaxIndex = (int) (60f/freqPerBin);
+		frequency = audioSource.clip.frequency;
+		frequencyNyquist = frequency / 2;
+		freqPerBin = (float)frequencyNyquist / (float)numSamples;
+	}
 
-		bassMinIndex = subBassMaxIndex;
-		bassMaxIndex = (int) (250f/freqPerBin);
+	void SetSpectrumRange(FreqRange freqRange)
+	{
+		spectrumRange = new SpectrumRange[8];
+		spectrumRange[0].name = "SubBass";
+		spectrumRange[0].min = (int) (20f/freqPerBin);
+		spectrumRange[0].max = (int) (60f/freqPerBin);
 
-		lowMidrangeMinIndex = bassMaxIndex;
-		lowMidrangeMaxIndex = (int) (500f/freqPerBin);
+		spectrumRange[1].name = "Bass";
+		spectrumRange[1].min = spectrumRange[0].max;
+		spectrumRange[1].max = (int) (250f/freqPerBin);
 
-		midrangeMinIndex = lowMidrangeMaxIndex;
-		midrangeMaxIndex = (int) (2000f/freqPerBin);
+		spectrumRange[2].name = "LowMidrange";
+		spectrumRange[2].min = spectrumRange[1].max;
+		spectrumRange[2].max = (int) (500f/freqPerBin);
 
-		upperMidrangeMinIndex = midrangeMaxIndex;
-		upperMidrangeMaxIndex = (int) (4000f/freqPerBin);
+		spectrumRange[3].name = "Midrange";
+		spectrumRange[3].min = spectrumRange[2].max;
+		spectrumRange[3].max = (int) (2000f/freqPerBin);
 
-		presenceMinIndex = upperMidrangeMaxIndex;
-		presenceMaxIndex = (int) (6000f/freqPerBin);
+		spectrumRange[4].name = "UpperMidrange";
+		spectrumRange[4].min = spectrumRange[3].max;
+		spectrumRange[4].max = (int) (4000f/freqPerBin);
 
-		brillianceMinIndex = presenceMaxIndex;
-		brillianceMaxIndex = (int) (20000f/freqPerBin);
+		spectrumRange[5].name = "Presence";
+		spectrumRange[5].min = spectrumRange[4].max;
+		spectrumRange[5].max = (int) (6000f/freqPerBin);
 
-		/*
-		Debug.Log("SUBBASS: " + subBassMinIndex + " -> " + subBassMaxIndex);
-		Debug.Log("BASS: " + bassMinIndex + " -> " + bassMaxIndex);
-		Debug.Log("LOW MID: " + lowMidrangeMinIndex + " -> " + lowMidrangeMaxIndex);
-		Debug.Log("MID: " + midrangeMinIndex + " -> " + midrangeMaxIndex);
-		Debug.Log("UPPER MID: " + upperMidrangeMinIndex + " -> " + upperMidrangeMaxIndex);
-		Debug.Log("PRESENCE: " + presenceMinIndex + " -> " + presenceMaxIndex);
-		Debug.Log("BRILLIANCE: " + brillianceMinIndex + " -> " + brillianceMaxIndex);
-		*/
+		spectrumRange[6].name = "Brilliance";
+		spectrumRange[6].min = spectrumRange[5].max;
+		spectrumRange[6].max = (int) (20000f/freqPerBin);
+
+		spectrumRange[7].name = "Full";
+		spectrumRange[7].min = spectrumRange[0].min;
+		spectrumRange[7].max = spectrumRange[6].max;
+
+		rangeToProcess = spectrumRange[(int)freqRange];
+		Debug.Log("Name: " + rangeToProcess.name);
+		Debug.Log("Min index: " + rangeToProcess.min);
+		Debug.Log("Max index: " + rangeToProcess.max);
 	}
 
 	void GetCurrentSpectrumData()
@@ -144,47 +142,47 @@ public class AudioProcessor : MonoBehaviour
 		switch (range) {
 			case (FreqRange.Full):
 			firstSampleIndex = 0;
-			lastSampleIndex = numSamples-1;
+			lastSampleIndex  = numSamples-1;
 			break;
 
 			case (FreqRange.SubBass):
-			firstSampleIndex = subBassMinIndex;
-			lastSampleIndex = subBassMaxIndex;
+			firstSampleIndex = spectrumRange[0].min;
+			lastSampleIndex  = spectrumRange[0].max;
 			break;
 			
 			case (FreqRange.Bass):
-			firstSampleIndex = bassMinIndex;
-			lastSampleIndex = bassMaxIndex;
+			firstSampleIndex = spectrumRange[1].min;
+			lastSampleIndex  = spectrumRange[1].max;
 			break;
 
 			case (FreqRange.LowMidrange):
-			firstSampleIndex = lowMidrangeMinIndex;
-			lastSampleIndex = lowMidrangeMaxIndex;
+			firstSampleIndex = spectrumRange[2].min;
+			lastSampleIndex  = spectrumRange[2].max;
 			break;
 
 			case (FreqRange.Midrange):
-			firstSampleIndex = midrangeMinIndex;
-			lastSampleIndex = midrangeMaxIndex;
+			firstSampleIndex = spectrumRange[3].min;
+			lastSampleIndex  = spectrumRange[3].max;
 			break;
 
 			case (FreqRange.UpperMidrange):
-			firstSampleIndex = upperMidrangeMinIndex;
-			lastSampleIndex = upperMidrangeMaxIndex;
+			firstSampleIndex = spectrumRange[4].min;
+			lastSampleIndex  = spectrumRange[4].max;
 			break;
 
 			case (FreqRange.Presence):
-			firstSampleIndex = lowMidrangeMinIndex;
-			lastSampleIndex = lowMidrangeMaxIndex;
+			firstSampleIndex = spectrumRange[5].min;
+			lastSampleIndex  = spectrumRange[5].max;
 			break;
 
 			case (FreqRange.Brilliance):
-			firstSampleIndex = brillianceMinIndex;
-			lastSampleIndex = brillianceMaxIndex;
+			firstSampleIndex = spectrumRange[6].min;
+			lastSampleIndex  = spectrumRange[6].max;
 			break;
 
 			default:
 			firstSampleIndex = 0;
-			lastSampleIndex = numSamples-1;
+			lastSampleIndex  = numSamples-1;
 			break;
 		}
 
@@ -195,688 +193,4 @@ public class AudioProcessor : MonoBehaviour
 		return flux;
 	}
 
-	float GetFluxThreshold(int index)
-	{
-		int windowStartIndex = Mathf.Max(0, index - thresholdWindowSize/2);
-		int windowEndIndex = Mathf.Max(numSamples-1, index + thresholdWindowSize/2);
-
-		float sum = 0.0f;
-		for (int i = windowStartIndex; i < windowEndIndex; i++) {
-			sum += Mathf.Max(0f, spectrumData[i] - prevSpectrumData[i]);
-		}
-
-		float avg = sum / (windowEndIndex - windowStartIndex);
-		return avg;
-	}
-
-/*
-	float AnalyzeSpectrum()
-	{
-		SpectralFluxInfo curInfo = new SpectralFluxInfo();
-		curInfo.time = Time.time;
-		curInfo.spectralFlux = GetSpectralFlux(FreqRange.Full);
-
-		return 0f;
-	}
-	*/
-
 }
-
-
-#endif
-
-
-
-
-
-
-#if !NEW
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-[RequireComponent (typeof(AudioSource))]
-public class AudioProcessor : MonoBehaviour
-{
-
-	public float amplitudeSpikeThreshold = 0.2f;
-	public float highSpikeThreshold = 0.2f;
-
-	public float bassSpikeThreshold = 0.08f;
-	public float bassSpikeTiming = 0.01f;
-	private float bassSinceLast = 0.0f;
-
-	private float[] prevBand;
-	
-	AudioSource audioSource;
-	int audioFreq;
-	float hertzPerSample;
-	public int BANDS = 7;
-	const FFTWindow fftWindowType = FFTWindow.BlackmanHarris;
-	
-	//const int numSamples = 256;
-	private int numSamples;
-	private float[] samplesLeft;
-	private float[] samplesRight;
-	private float[] freqBands;
-	private float[] bandBuffer;
-	private float[] bufferDecrease;
-	private float[] freqBandHighest;
-
-	[HideInInspector]
-	public float[] audioBand, audioBandBuffer;
-	[HideInInspector]
-	public float amplitude, amplitudeBuffer;
-
-	private float amplitudeHighest;
-
-	[HideInInspector]
-	public float averageAmplitude, prevAverageAmplitude;
-
-	//public float audioProfile = 5;
-	public float barFallAccel = 1.20f;
-	public float barFallBaseSpeed = 0.01f;
-
-	public enum Channel {Stereo, Left, Right};
-	public Channel channel = new Channel();
-
-
-	public float beatTimingThreshold = 0.001f;
-
-    void Start()
-    {
-		InitData(BANDS);
-		audioSource.time = 15.0f;
-		PichardoStart();
-    }
-
-    void Update()
-    {
-		if (!audioSource.isPlaying) {
-			return;
-		}
-		PichardoUpdate();
-		GetSpectrumAudioSource();
-		MakeFreqBands(BANDS);
-		//CheckAmplitudeSpikeUnweighted();
-		//CheckAmplitudeSpikeWeighted();
-		CheckBassSpike();
-		BandBuffer(BANDS);
-		CreateAudioBands(BANDS);
-		GetAmplitude(BANDS);
-    }
-
-	void InitData(int numBands)
-	{
-		numSamples = (int) Mathf.Pow(2, numBands+1);
-		audioSource = GetComponent<AudioSource>();
-		audioBand = new float[numBands];
-		prevBand = new float[numBands];
-		audioBandBuffer = new float[numBands];
-		channel = Channel.Stereo;
-		//AudioProfile(audioProfile, numBands);	
-		samplesLeft = new float[numSamples];
-		samplesRight = new float[numSamples];
-		freqBands = new float[numBands];
-		bandBuffer = new float[numBands];
-		bufferDecrease = new float[numBands];
-		freqBandHighest = new float[numBands];
-	}
-    void GetSpectrumAudioSource()
-    {
-		audioSource.GetSpectrumData(samplesLeft, 0, fftWindowType);
-		audioSource.GetSpectrumData(samplesRight, 1, fftWindowType);
-    }
-
-	void MakeFreqBands(int numBands)
-	{
-		int count = 0;
-		//prevBand = freqBands;
-		for (int i = 0; i < numBands; i++) {
-			prevBand[i] = freqBands[i];
-		}
-
-		for (int i = 0; i < numBands; i++) {
-
-			float average = 0.0f;
-			int sampleCount = (int) Mathf.Pow(2,i) * 2; // the number of samples within band 'i'
-
-			if (i == numBands - 1) {
-				sampleCount += 2;
-			}
-
-			for (int j = 0; j < sampleCount/(numBands/7); j++) { // find average of all amplitudes in band 'i'
-				if (channel == Channel.Stereo) {
-					average += (samplesLeft[count] + samplesRight[count]) * (count+1);
-				}
-				else if (channel == Channel.Left) {
-					average += samplesLeft[count] * (count+1);
-				}
-				else if (channel == Channel.Right) {
-					average += samplesRight[count] * (count+1);
-				}
-				count++;
-			}
-
-			average /= count;
-			freqBands[i] = average * 10;
-		}
-		GetAverageAmplitude();
-	}
-
-	void BandBuffer(int numBands)
-	{
-		for (int i = 0; i < numBands; i++) {
-			if (freqBands[i] < bandBuffer[i]) {
-				bandBuffer[i] -= bufferDecrease[i];
-				bufferDecrease[i] *= barFallAccel;
-			}
-			else {
-				bandBuffer[i] = freqBands[i];
-				bufferDecrease[i] = barFallBaseSpeed;
-			}
-			if (freqBands[i] < 0.0f) 	freqBands[i] = 0.0f;
-			if (bandBuffer[i] < 0.0f) 	bandBuffer[i] = 0.0f;
-		}
-
-	}
-	void CreateAudioBands(int numBands)
-	{
-		for (int i = 0; i < numBands; i++) {
-			if (freqBands[i] > freqBandHighest[i]) {
-				freqBandHighest[i] = freqBands[i];
-			}
-			audioBand[i] = (freqBands[i]/freqBandHighest[i]);
-			audioBandBuffer[i] = (bandBuffer[i]/freqBandHighest[i]);
-		}
-
-	}
-	void GetAmplitude(int numBands) // put average amplitude into one value
-	{
-		float currentAmplitude = 0;
-		float currentAmplitudeBuffer = 0;
-
-		for (int i = 0; i < numBands; i++) {
-			currentAmplitude += audioBand[i];
-			currentAmplitudeBuffer += audioBandBuffer[i];
-		}
-
-		if (currentAmplitude > amplitudeHighest) {
-			amplitudeHighest = currentAmplitude;
-		}
-		amplitude = currentAmplitude / amplitudeHighest;
-		amplitudeBuffer = currentAmplitudeBuffer / amplitudeHighest;
-	}
-	void AudioProfile(float audioProfile,int numBands)
-	{
-		for (int i = 0; i < numBands; i++) {
-			freqBandHighest[i] = audioProfile;
-		}
-	}
-
-
-
-	/*
-	Goal here is to see if the difference between the previous frame's average amp. and the current average amp. 
-	is large enough to suggest a beat/spike (the threshold is given in the amplitudeSpikeThreshold variable.
-
-	Want to put more emphasis on the kick range (subbass = band 0 // bass = band 1 ) 
-	and clap range (upperMidRange = band 4... maybe presence of mid too??)
-
-	Maybe check both weighted and unweighted and see if they agree
-	*/
-
-	void GetAverageAmplitude()
-	{
-		prevAverageAmplitude = averageAmplitude;
-		averageAmplitude = 0.0f;
-		for (int i = 0; i < BANDS; i++) {
-			averageAmplitude += freqBands[i];
-		}
-		averageAmplitude /= BANDS;
-	}
-
-	void CheckAmplitudeSpikeUnweighted()
-	{
-		if ( (averageAmplitude - prevAverageAmplitude) > amplitudeSpikeThreshold) {
-			Debug.Log("SPIKE (UNWEIGHTED)");
-		}
-	}
-
-	void CheckBassSpike()
-	{
-		float bassWeight = 0.6f;
-		float subBassWeight = 1 - bassWeight;
-		float subBassDampen = 1.0f;
-
-		float prevBass 	= prevBand[0] + prevBand[1];
-		float newBass  	= (freqBands[0] * subBassWeight * subBassDampen) + (freqBands[1] * bassWeight);
-		float bassDiff 	= (newBass - prevBass) / 2;
-
-		bassSinceLast += Time.deltaTime;
-		if (bassDiff > bassSpikeThreshold && bassSinceLast > bassSpikeTiming) {
-			Debug.Log("BASS");
-			bassSinceLast = 0.0f;
-		}
-	}
-
-	void CheckHighSpike()
-	{
-		float prevHigh 	= prevBand[5] + prevBand[6];
-		float newHigh  	= freqBands[5] + freqBands[6];
-		float highDiff 	= (newHigh - prevHigh) / 2;
-	}
-
-	void CheckAmplitudeSpikeWeighted()
-	{
-	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
- * Copyright (c) 2015 Allan Pichardo
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *  http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-	private long lastT, nowT, diff, entries, sum;
-
-	public int bufferSize = 1024;
-	// fft size
-	private int samplingRate = 44100;
-	// fft sampling frequency
-
-	/* log-frequency averaging controls */
-	private int nBand = 12;
-	// number of bands
-
-	public float gThresh = 0.1f;
-	// sensitivity
-
-	int blipDelayLen = 16;
-	int[] blipDelay;
-
-	private int sinceLast = 0;
-	// counter to suppress double-beats
-
-	private float framePeriod;
-
-	/* storage space */
-	private int colmax = 120;
-	float[] spectrum;
-	float[] averages;
-	float[] acVals;
-	float[] onsets;
-	float[] scorefun;
-	float[] dobeat;
-	int now = 0;
-	// time index for circular buffer within above
-
-	float[] spec;
-	// the spectrum of the previous step
-
-	/* Autocorrelation structure */
-	int maxlag = 100;
-	// (in frames) largest lag to track
-	float decay = 0.997f;
-	// smoothing constant for running average
-	Autoco auco;
-
-	private float alph;
-	// trade-off constant between tempo deviation penalty and onset strength
-
-	[Header ("Events")]
-	public OnBeatEventHandler onBeat;
-	public OnSpectrumEventHandler onSpectrum;
-
-	//////////////////////////////////
-	private long getCurrentTimeMillis ()
-	{
-		long milliseconds = System.DateTime.Now.Ticks / System.TimeSpan.TicksPerMillisecond;
-		return milliseconds;
-	}
-
-	private void initArrays ()
-	{
-		blipDelay = new int[blipDelayLen];
-		onsets = new float[colmax];
-		scorefun = new float[colmax];
-		dobeat = new float[colmax];
-		spectrum = new float[bufferSize];
-		averages = new float[12];
-		acVals = new float[maxlag];
-		alph = 100 * gThresh;
-	}
-
-	// Use this for initialization
-	void PichardoStart ()
-	{
-		initArrays ();
-
-		audioSource = GetComponent<AudioSource> ();
-		samplingRate = audioSource.clip.frequency;
-
-		framePeriod = (float)bufferSize / (float)samplingRate;
-
-		//initialize record of previous spectrum
-		spec = new float[nBand];
-		for (int i = 0; i < nBand; ++i)
-			spec [i] = 100.0f;
-
-		auco = new Autoco (maxlag, decay, framePeriod, getBandWidth ());
-
-		lastT = getCurrentTimeMillis ();
-	}
-
-	public void tapTempo ()
-	{
-		nowT = getCurrentTimeMillis ();
-		diff = nowT - lastT;
-		lastT = nowT;
-		sum = sum + diff;
-		entries++;
-
-		int average = (int)(sum / entries);
-
-		Debug.Log ("average = " + average);
-	}
-
-	double[] toDoubleArray (float[] arr)
-	{
-		if (arr == null)
-			return null;
-		int n = arr.Length;
-		double[] ret = new double[n];
-		for (int i = 0; i < n; i++) {
-			ret [i] = (float)arr [i];
-		}
-		return ret;
-	}
-
-	// Update is called once per frame
-	void PichardoUpdate ()
-	{
-		if (audioSource.isPlaying) {
-			audioSource.GetSpectrumData (spectrum, 0, FFTWindow.BlackmanHarris);
-			computeAverages (spectrum);
-			onSpectrum.Invoke (averages);
-
-			/* calculate the value of the onset function in this frame */
-			float onset = 0;
-			for (int i = 0; i < nBand; i++) {
-				float specVal = (float)System.Math.Max (-100.0f, 20.0f * (float)System.Math.Log10 (averages [i]) + 160); // dB value of this band
-				specVal *= 0.025f;
-				float dbInc = specVal - spec [i]; // dB increment since last frame
-				spec [i] = specVal; // record this frome to use next time around
-				onset += dbInc; // onset function is the sum of dB increments
-			}
-
-			onsets [now] = onset;
-
-			/* update autocorrelator and find peak lag = current tempo */
-			auco.newVal (onset);
-			// record largest value in (weighted) autocorrelation as it will be the tempo
-			float aMax = 0.0f;
-			int tempopd = 0;
-			//float[] acVals = new float[maxlag];
-			for (int i = 0; i < maxlag; ++i) {
-				float acVal = (float)System.Math.Sqrt (auco.autoco (i));
-				if (acVal > aMax) {
-					aMax = acVal;
-					tempopd = i;
-				}
-				// store in array backwards, so it displays right-to-left, in line with traces
-				acVals [maxlag - 1 - i] = acVal;
-			}
-
-			/* calculate DP-ish function to update the best-score function */
-			float smax = -999999;
-			int smaxix = 0;
-			// weight can be varied dynamically with the mouse
-			alph = 100 * gThresh;
-			// consider all possible preceding beat times from 0.5 to 2.0 x current tempo period
-			for (int i = tempopd / 2; i < System.Math.Min (colmax, 2 * tempopd); ++i) {
-				// objective function - this beat's cost + score to last beat + transition penalty
-				float score = onset + scorefun [(now - i + colmax) % colmax] - alph * (float)System.Math.Pow (System.Math.Log ((float)i / (float)tempopd), 2);
-				// keep track of the best-scoring predecesor
-				if (score > smax) {
-					smax = score;
-					smaxix = i;
-				}
-			}
-
-			scorefun [now] = smax;
-			// keep the smallest value in the score fn window as zero, by subtracing the min val
-			float smin = scorefun [0];
-			for (int i = 0; i < colmax; ++i)
-				if (scorefun [i] < smin)
-					smin = scorefun [i];
-			for (int i = 0; i < colmax; ++i)
-				scorefun [i] -= smin;
-
-			/* find the largest value in the score fn window, to decide if we emit a blip */
-			smax = scorefun [0];
-			smaxix = 0;
-			for (int i = 0; i < colmax; ++i) {
-				if (scorefun [i] > smax) {
-					smax = scorefun [i];
-					smaxix = i;
-				}
-			}
-
-			// dobeat array records where we actally place beats
-			dobeat [now] = 0;  // default is no beat this frame
-			++sinceLast;
-			// if current value is largest in the array, probably means we're on a beat
-			if (smaxix == now) {
-				//tapTempo();
-				// make sure the most recent beat wasn't too recently
-				/*
-				float framesPerSecond = Time.frameCount / Time.deltaTime;
-				float secondsPerFrame = 1/framesPerSecond;
-				float secondsPerBeat = 60/BeatDetector.bpm;
-				float beatsPerSecond = BeatDetector.bpm / 60;
-				float beatsPerFrame = beatsPerSecond / framesPerSecond;
-				float low = beatsPerFrame - beatTimingThreshold;
-				float high = beatsPerFrame + beatTimingThreshold;
-				if (sinceLast > (tempopd / 4) + beatsPerFrame ) {
-				*/
-				if (sinceLast > (tempopd / 4)) {
-					onBeat.Invoke ();			
-					blipDelay [0] = 1;
-					// record that we did actually mark a beat this frame
-					dobeat [now] = 1;
-					// reset counter of frames since last beat
-					sinceLast = 0;
-				}
-			}
-
-			/* update column index (for ring buffer) */
-			if (++now == colmax)
-				now = 0;
-
-			//Debug.Log(System.Math.Round(60 / (tempopd * framePeriod)) + " bpm");
-			//Debug.Log(System.Math.Round(auco.avgBpm()) + " bpm");
-		}
-	}
-
-	public void changeCameraColor ()
-	{
-		//Debug.Log("camera");
-		float r = Random.Range (0f, 1f);
-		float g = Random.Range (0f, 1f);
-		float b = Random.Range (0f, 1f);
-
-		//Debug.Log(r + "," + g + "," + b);
-		Color color = new Color (r, g, b);
-
-		GetComponent<Camera> ().clearFlags = CameraClearFlags.Color;
-		Camera.main.backgroundColor = color;
-
-		//camera.backgroundColor = color;
-	}
-
-	public float getBandWidth ()
-	{
-		return (2f / (float)bufferSize) * (samplingRate / 2f);
-	}
-
-	public int freqToIndex (int freq)
-	{
-		// special case: freq is lower than the bandwidth of spectrum[0]
-		if (freq < getBandWidth () / 2)
-			return 0;
-		// special case: freq is within the bandwidth of spectrum[512]
-		if (freq > samplingRate / 2 - getBandWidth () / 2)
-			return (bufferSize / 2);
-		// all other cases
-		float fraction = (float)freq / (float)samplingRate;
-		int i = (int)System.Math.Round (bufferSize * fraction);
-		//Debug.Log("frequency: " + freq + ", index: " + i);
-		return i;
-	}
-
-	public void computeAverages (float[] data)
-	{
-		for (int i = 0; i < 12; i++) {
-			float avg = 0;
-			int lowFreq;
-			if (i == 0)
-				lowFreq = 0;
-			else
-				lowFreq = (int)((samplingRate / 2) / (float)System.Math.Pow (2, 12 - i));
-			int hiFreq = (int)((samplingRate / 2) / (float)System.Math.Pow (2, 11 - i));
-			int lowBound = freqToIndex (lowFreq);
-			int hiBound = freqToIndex (hiFreq);
-			for (int j = lowBound; j <= hiBound; j++) {
-				//Debug.Log("lowbound: " + lowBound + ", highbound: " + hiBound);
-				avg += data [j];
-			}
-			// line has been changed since discussion in the comments
-			// avg /= (hiBound - lowBound);
-			avg /= (hiBound - lowBound + 1);
-			averages [i] = avg;
-		}
-	}
-
-	float map (float s, float a1, float a2, float b1, float b2)
-	{
-		return b1 + (s - a1) * (b2 - b1) / (a2 - a1);
-	}
-
-	public float constrain (float value, float inclusiveMinimum, float inlusiveMaximum)
-	{
-		if (value >= inclusiveMinimum) {
-			if (value <= inlusiveMaximum) {
-				return value;
-			}
-
-			return inlusiveMaximum;
-		}
-
-		return inclusiveMinimum;
-	}
-
-	[System.Serializable]
-	public class OnBeatEventHandler : UnityEngine.Events.UnityEvent
-	{
-
-	}
-
-	[System.Serializable]
-	public class OnSpectrumEventHandler : UnityEngine.Events.UnityEvent<float []>
-	{
-
-	}
-
-	// class to compute an array of online autocorrelators
-	private class Autoco
-	{
-		private int del_length;
-		private float decay;
-		private float[] delays;
-		private float[] outputs;
-		private int indx;
-
-		private float[] bpms;
-		private float[] rweight;
-		private float wmidbpm = 120f;
-		private float woctavewidth;
-
-		public Autoco (int len, float alpha, float framePeriod, float bandwidth)
-		{
-			woctavewidth = bandwidth;
-			decay = alpha;
-			del_length = len;
-			delays = new float[del_length];
-			outputs = new float[del_length];
-			indx = 0;
-
-			// calculate a log-lag gaussian weighting function, to prefer tempi around 120 bpm
-			bpms = new float[del_length];
-			rweight = new float[del_length];
-			for (int i = 0; i < del_length; ++i) {
-				bpms [i] = 60.0f / (framePeriod * (float)i);
-				//Debug.Log(bpms[i]);
-				// weighting is Gaussian on log-BPM axis, centered at wmidbpm, SD = woctavewidth octaves
-				rweight [i] = (float)System.Math.Exp (-0.5f * System.Math.Pow (System.Math.Log (bpms [i] / wmidbpm) / System.Math.Log (2.0f) / woctavewidth, 2.0f));
-			}
-		}
-
-		public void newVal (float val)
-		{
-
-			delays [indx] = val;
-
-			// update running autocorrelator values
-			for (int i = 0; i < del_length; ++i) {
-				int delix = (indx - i + del_length) % del_length;
-				outputs [i] += (1 - decay) * (delays [indx] * delays [delix] - outputs [i]);
-			}
-
-			if (++indx == del_length)
-				indx = 0;
-		}
-
-		// read back the current autocorrelator value at a particular lag
-		public float autoco (int del)
-		{
-			float blah = rweight [del] * outputs [del];
-			return blah;
-		}
-
-		public float avgBpm ()
-		{
-			float sum = 0;
-			for (int i = 0; i < bpms.Length; ++i) {
-				sum += bpms [i];
-			}
-			return sum / del_length;
-		}
-	}
-}
-#endif

@@ -43,14 +43,14 @@ public class SpectralFluxAnalyzer : MonoBehaviour{
 		spectrum.CopyTo (curSpectrum, 0);
 	}
 		
-	public void analyzeSpectrum(float[] spectrum, float time) {
+	public void analyzeSpectrum(float[] spectrum, float time, AudioProcessor.SpectrumRange rangeToProcess) {
 		// Set spectrum
 		setCurSpectrum(spectrum);
 
 		// Get current spectral flux from spectrum
 		SpectralFluxInfo curInfo = new SpectralFluxInfo();
 		curInfo.time = time;
-		curInfo.spectralFlux = calculateRectifiedSpectralFlux ();
+		curInfo.spectralFlux = calculateRectifiedSpectralFlux(rangeToProcess);
 		spectralFluxSamples.Add (curInfo);
 
 		// We have enough samples to detect a peak
@@ -77,11 +77,11 @@ public class SpectralFluxAnalyzer : MonoBehaviour{
 		}
 	}
 
-	float calculateRectifiedSpectralFlux() {
+	float calculateRectifiedSpectralFlux(AudioProcessor.SpectrumRange spectrumRange) {
 		float sum = 0f;
 
 		// Aggregate positive changes in spectrum data
-		for (int i = 0; i < numSamples; i++) {
+		for (int i = spectrumRange.min; i < spectrumRange.max; i++) {
 			sum += Mathf.Max (0f, curSpectrum [i] - prevSpectrum [i]);
 		}
 		return sum;
@@ -132,4 +132,6 @@ public class SpectralFluxAnalyzer : MonoBehaviour{
 			windowEnd - windowStart
 		));
 	}
+
+	public void SetThresholdMultiplier(float value) {thresholdMultiplier = value;}
 }

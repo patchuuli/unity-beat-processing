@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/*
 public class BandGenerator : MonoBehaviour
 {
+/*
 	public enum ScalingAxis {x,y,z};
 
 	[HideInInspector]
@@ -148,5 +148,5 @@ public class BandGenerator : MonoBehaviour
 	        }
 		}
 	}
-}
 */
+}

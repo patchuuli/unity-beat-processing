@@ -14,11 +14,8 @@ public class SpectralFluxInfo {
 public class SpectralFluxAnalyzer : MonoBehaviour{
 	int numSamples = 1024;
 
-	// Sensitivity multiplier to scale the average threshold.
-	// In this case, if a rectified spectral flux sample is > 1.5 times the average, it is a peak
-	float thresholdMultiplier = 1.5f;
+	public float thresholdMultiplier = 1.5f;
 
-	// Number of samples to average in our window
 	int thresholdWindowSize = 50;
 
 	public List<SpectralFluxInfo> spectralFluxSamples;
@@ -43,6 +40,8 @@ public class SpectralFluxAnalyzer : MonoBehaviour{
 		spectrum.CopyTo (curSpectrum, 0);
 	}
 		
+
+
 	public void analyzeSpectrum(float[] spectrum, float time, AudioProcessor.SpectrumRange rangeToProcess) {
 		// Set spectrum
 		setCurSpectrum(spectrum);

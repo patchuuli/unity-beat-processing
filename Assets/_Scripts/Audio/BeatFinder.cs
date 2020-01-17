@@ -10,13 +10,11 @@ public class BeatFinder : MonoBehaviour
 	float[] prevSpectrum;
 	public SpectralFluxInfo[] spectralFluxSamples;
 
-	AudioProcessor audioProcessor;
 
 	public BeatFinder () {
-		audioProcessor = GetComponent<AudioProcessor>();
-		spectralFluxSamples = new SpectralFluxInfo[audioProcessor.numSamples];
-		curSpectrum = new float[audioProcessor.numSamples];
-		prevSpectrum = new float[audioProcessor.numSamples];
+		spectralFluxSamples = new SpectralFluxInfo[AudioProcessor.numSamples];
+		curSpectrum = new float[AudioProcessor.numSamples];
+		prevSpectrum = new float[AudioProcessor.numSamples];
 	}
 
 	float GetSpectralFlux(AudioProcessor.SpectrumRange spectrumRange)

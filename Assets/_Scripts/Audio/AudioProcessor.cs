@@ -13,11 +13,11 @@ TODO:
 */
 
 [RequireComponent (typeof(AudioSource))]
-[RequireComponent (typeof(SpectralFluxAnalyzer))]
+[RequireComponent (typeof(SpectrumAnalyzer))]
+//[RequireComponent (typeof(SpectralFluxAnalyzer))]
 //[RequireComponent (typeof(BandGenerator))]
 public class AudioProcessor : MonoBehaviour
 {
-
 	public enum FreqRange {
 		SubBass,
 		Bass,
@@ -39,9 +39,8 @@ public class AudioProcessor : MonoBehaviour
 	private SpectrumRange rangeToProcess;
 
 	private float[] spectrumData;
-	private float[] prevSpectrumData;
 
-	public int numSamples = 1024;
+	public static int numSamples = 1024;
 	private int frequency;
 	private int frequencyNyquist;
 	private float freqPerBin;
@@ -51,15 +50,16 @@ public class AudioProcessor : MonoBehaviour
 	//private float thresholdMultiplier = 1.0f;
 
 	private AudioSource audioSource;
-	private SpectralFluxAnalyzer spectrumAnalyzer;
+	private SpectrumAnalyzer spectrumAnalyzer;
 	private BandGenerator bandGenerator;
 
 
     void Start()
     {
 		audioSource = GetComponent<AudioSource>();
+		audioSource.time = 15f;
 		audioSource.Play();
-		spectrumAnalyzer =  GetComponent<SpectralFluxAnalyzer>();
+		spectrumAnalyzer =  GetComponent<SpectrumAnalyzer>();
 		spectrumData = new float[numSamples];
 		GetFreqDataFromClip();
 		SetSpectrumRange(FreqRange.Bass);
@@ -68,7 +68,9 @@ public class AudioProcessor : MonoBehaviour
     void Update()
     {
 		audioSource.GetSpectrumData(spectrumData, 0, FFTWindow.BlackmanHarris);
-		spectrumAnalyzer.analyzeSpectrum(spectrumData, audioSource.time, rangeToProcess);
+		spectrumAnalyzer.UpdateSpectrumData(spectrumData);
+		spectrumAnalyzer.AnalyzeSpectrum(rangeToProcess);
+		//spectrumAnalyzer.analyzeSpectrum(spectrumData, audioSource.time, rangeToProcess);
 		/*
 		GetCurrentSpectrumData();
 		if (GetSpectralFlux(FreqRange.Bass) > fluxThreshold ||
@@ -125,17 +127,9 @@ public class AudioProcessor : MonoBehaviour
 		spectrumRange[7].max = spectrumRange[6].max;
 
 		rangeToProcess = spectrumRange[(int)freqRange];
-		Debug.Log("Name: " + rangeToProcess.name);
-		Debug.Log("Min index: " + rangeToProcess.min);
-		Debug.Log("Max index: " + rangeToProcess.max);
 	}
 
-	void GetCurrentSpectrumData()
-	{
-		spectrumData.CopyTo(prevSpectrumData, 0);
-        audioSource.GetSpectrumData(spectrumData, 0, FFTWindow.BlackmanHarris);
-	}
-
+/*
 	float GetSpectralFlux(FreqRange range)
 	{
 		int firstSampleIndex, lastSampleIndex;
@@ -192,5 +186,6 @@ public class AudioProcessor : MonoBehaviour
 		}
 		return flux;
 	}
+    */
 
 }

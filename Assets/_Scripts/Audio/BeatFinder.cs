@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class BeatFinder : MonoBehaviour
 {
+	AudioProcessor audioProcessor;
 	float thresholdMultiplier = 1.5f;
 	int thresholdWindowSize = 50;
 	float[] curSpectrum;
@@ -12,9 +13,10 @@ public class BeatFinder : MonoBehaviour
 
 
 	public BeatFinder () {
-		spectralFluxSamples = new SpectralFluxInfo[AudioProcessor.numSamples];
-		curSpectrum = new float[AudioProcessor.numSamples];
-		prevSpectrum = new float[AudioProcessor.numSamples];
+		audioProcessor = FindObjectOfType<AudioProcessor>();
+		spectralFluxSamples = new SpectralFluxInfo[audioProcessor.numSamples];
+		curSpectrum = new float[audioProcessor.numSamples];
+		prevSpectrum = new float[audioProcessor.numSamples];
 	}
 
 	float GetSpectralFlux(AudioProcessor.SpectrumRange spectrumRange)

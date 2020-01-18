@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿#define NEW
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -13,7 +14,7 @@ TODO:
 */
 
 [RequireComponent (typeof(AudioSource))]
-[RequireComponent (typeof(SpectrumAnalyzer))]
+//[RequireComponent (typeof(SpectrumAnalyzer))]
 //[RequireComponent (typeof(SpectralFluxAnalyzer))]
 //[RequireComponent (typeof(BandGenerator))]
 public class AudioProcessor : MonoBehaviour
@@ -37,52 +38,50 @@ public class AudioProcessor : MonoBehaviour
 
 	private SpectrumRange[] spectrumRange;
 	private SpectrumRange rangeToProcess;
+	public FreqRange rangeSelector;
 
 	private float[] spectrumData;
 
-	public static int numSamples = 1024;
+	public int numSamples = 1024;
 	private int frequency;
 	private int frequencyNyquist;
 	private float freqPerBin;
 
-	//public float fluxThreshold = 0.6f;
-	//private int thresholdWindowSize = 30;
-	//private float thresholdMultiplier = 1.0f;
-
 	private AudioSource audioSource;
+	#if NEW
 	private SpectrumAnalyzer spectrumAnalyzer;
+	#else
+	private SpectralFluxAnalyzer spectrumAnalyzer;
+	#endif
 	private BandGenerator bandGenerator;
 
 
     void Start()
     {
 		audioSource = GetComponent<AudioSource>();
-		audioSource.time = 15f;
+		audioSource.time = 17f;
 		audioSource.Play();
+		#if NEW
 		spectrumAnalyzer =  GetComponent<SpectrumAnalyzer>();
+		#else
+		spectrumAnalyzer =  GetComponent<SpectralFluxAnalyzer>();
+		#endif
 		spectrumData = new float[numSamples];
 		GetFreqDataFromClip();
-		SetSpectrumRange(FreqRange.Bass);
+		SetSpectrumRange(rangeSelector);
     }
 
     void Update()
     {
 		audioSource.GetSpectrumData(spectrumData, 0, FFTWindow.BlackmanHarris);
-		spectrumAnalyzer.UpdateSpectrumData(spectrumData);
-		spectrumAnalyzer.AnalyzeSpectrum(rangeToProcess);
-		//spectrumAnalyzer.analyzeSpectrum(spectrumData, audioSource.time, rangeToProcess);
-		/*
-		GetCurrentSpectrumData();
-		if (GetSpectralFlux(FreqRange.Bass) > fluxThreshold ||
-			GetSpectralFlux(FreqRange.Bass) > fluxThreshold) {
-			Debug.Log("KICK");
-		}
-		if (GetSpectralFlux(FreqRange.Midrange) > fluxThreshold ||
-			GetSpectralFlux(FreqRange.UpperMidrange) > fluxThreshold) {
-			Debug.Log("CLAP");
-		}
-		*/
+		#if NEW
+		spectrumAnalyzer.AnalyzeSpectrum(spectrumData,rangeToProcess);
+		#else
+		spectrumAnalyzer.analyzeSpectrum(spectrumData,audioSource.time,rangeToProcess);
+		#endif
     }
+
+	public float CurrentSongTime() {return audioSource.time;}
 
 	void GetFreqDataFromClip()
 	{
@@ -90,6 +89,7 @@ public class AudioProcessor : MonoBehaviour
 		frequencyNyquist = frequency / 2;
 		freqPerBin = (float)frequencyNyquist / (float)numSamples;
 	}
+
 
 	void SetSpectrumRange(FreqRange freqRange)
 	{
@@ -125,67 +125,7 @@ public class AudioProcessor : MonoBehaviour
 		spectrumRange[7].name = "Full";
 		spectrumRange[7].min = spectrumRange[0].min;
 		spectrumRange[7].max = spectrumRange[6].max;
-
+		
 		rangeToProcess = spectrumRange[(int)freqRange];
 	}
-
-/*
-	float GetSpectralFlux(FreqRange range)
-	{
-		int firstSampleIndex, lastSampleIndex;
-		switch (range) {
-			case (FreqRange.Full):
-			firstSampleIndex = 0;
-			lastSampleIndex  = numSamples-1;
-			break;
-
-			case (FreqRange.SubBass):
-			firstSampleIndex = spectrumRange[0].min;
-			lastSampleIndex  = spectrumRange[0].max;
-			break;
-			
-			case (FreqRange.Bass):
-			firstSampleIndex = spectrumRange[1].min;
-			lastSampleIndex  = spectrumRange[1].max;
-			break;
-
-			case (FreqRange.LowMidrange):
-			firstSampleIndex = spectrumRange[2].min;
-			lastSampleIndex  = spectrumRange[2].max;
-			break;
-
-			case (FreqRange.Midrange):
-			firstSampleIndex = spectrumRange[3].min;
-			lastSampleIndex  = spectrumRange[3].max;
-			break;
-
-			case (FreqRange.UpperMidrange):
-			firstSampleIndex = spectrumRange[4].min;
-			lastSampleIndex  = spectrumRange[4].max;
-			break;
-
-			case (FreqRange.Presence):
-			firstSampleIndex = spectrumRange[5].min;
-			lastSampleIndex  = spectrumRange[5].max;
-			break;
-
-			case (FreqRange.Brilliance):
-			firstSampleIndex = spectrumRange[6].min;
-			lastSampleIndex  = spectrumRange[6].max;
-			break;
-
-			default:
-			firstSampleIndex = 0;
-			lastSampleIndex  = numSamples-1;
-			break;
-		}
-
-		float flux = 0f;
-		for (int i = firstSampleIndex; i <= lastSampleIndex; i++) {
-			flux += Mathf.Max(0f, spectrumData[i] - prevSpectrumData[i]);
-		}
-		return flux;
-	}
-    */
-
 }

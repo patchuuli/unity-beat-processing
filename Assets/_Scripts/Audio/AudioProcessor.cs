@@ -3,20 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-/*
-TODO:
-	Edit "SpectralFluxAnalyzer::analyzeSpectrum take an extra argument to set the FreqRange
-	Will have to make FreqRange visible to that class
-
-	Notice how the max brilliance index is only 800 or something. 
-	Maybe make curSpectrum[] and prevSpectrum[] only be of length [maxBrillianceIndex]
-
-*/
-
 [RequireComponent (typeof(AudioSource))]
-//[RequireComponent (typeof(SpectrumAnalyzer))]
-//[RequireComponent (typeof(SpectralFluxAnalyzer))]
-//[RequireComponent (typeof(BandGenerator))]
+[RequireComponent (typeof(SpectrumAnalyzer))]
+
 public class AudioProcessor : MonoBehaviour
 {
 	public enum FreqRange {
@@ -36,17 +25,15 @@ public class AudioProcessor : MonoBehaviour
 		public int max;
 	};
 
+	public FreqRange rangeSelector;
 	private SpectrumRange[] spectrumRange;
 	private SpectrumRange rangeToProcess;
-	public FreqRange rangeSelector;
-
 	private float[] spectrumData;
-
+	[HideInInspector]
 	public int numSamples = 1024;
 	private int frequency;
 	private int frequencyNyquist;
 	private float freqPerBin;
-
 	private AudioSource audioSource;
 	#if NEW
 	private SpectrumAnalyzer spectrumAnalyzer;

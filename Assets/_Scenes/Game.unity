@@ -231,11 +231,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 1930700938}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7a80e42f6495c991ab85c8f9ffffa056, type: 3}
+  m_Script: {fileID: 11500000, guid: 3cca2e79a7fe884edb7042c7c2d00905, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  thresholdWindowSize: 50
-  thresholdMultiplier: 1.5
+  thresholdWindowSize: 30
+  thresholdMultiplier: 5.7
+  avgPeakValue: 0
+  avgNonPeakValue: 0
+  avgOverallValue: 0
 --- !u!114 &1930700940
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -245,7 +248,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1930700938}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6f057c007072e65f08cf29fd5a026d88, type: 3}
+  m_Script: {fileID: 11500000, guid: 91872c9624d2be9b599e41ebaa664948, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   rangeSelector: 1
